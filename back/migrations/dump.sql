@@ -1,7 +1,7 @@
 CREATE TABLE "users"(
     "id" UUID NOT NULL,
     "lastname" VARCHAR(255) NOT NULL,
-    "firsname" VARCHAR(255) NOT NULL,
+    "firstname" VARCHAR(255) NOT NULL,
     "email" VARCHAR(255) NOT NULL,
     "password" VARCHAR(255) NOT NULL,
     "roles" VARCHAR(255) NOT NULL,
@@ -58,5 +58,5 @@ ALTER TABLE
 ALTER TABLE
     "users" ADD CONSTRAINT "users_salon_id_foreign" FOREIGN KEY("salon_id") REFERENCES "salons"("id");
 
-INSERT INTO "users" ("id", "lastname", "firsname", "email", "password", "roles", "salon_id")
-    VALUES ('ce801349-752c-4cee-a660-9f7cceaf7131', 'admin', 'admin', 'admin', '8C6976E5B5410415BDE908BD4DEE15DFB167A9C873FC4BB8A81F6F2AB448A918', 'admin', NULL);
+INSERT INTO "users" ("id", "lastname", "firstname", "email", "password", "roles", "salon_id")
+    VALUES ('ce801349-752c-4cee-a660-9f7cceaf7131', 'admin', 'admin', 'admin', '$2a$10$kDjL2RObjxHJbue3uX9UzeZxcmxhE2ig0wZWgzsXZk4hXdVB9gHRm', 'admin', NULL);
