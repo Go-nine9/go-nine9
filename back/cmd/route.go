@@ -6,5 +6,15 @@ import (
 )
 
 func setupRoutes(app *fiber.App) {
-	app.Get("/", controllers.Home)
+	api := app.Group("/api")
+
+	api.Get("/", controllers.Home)
+
+	admin := api.Group("/admin")
+	//USERS
+	admin.Get("/users", controllers.GetAllUsers)
+	admin.Get("/users/:id", controllers.GetUserById)
+	admin.Post("/users", controllers.CreateUser)
+	admin.Patch("/users/:id", controllers.UpdateUser)
+	admin.Delete("/users/:id", controllers.DeleteUser)
 }
