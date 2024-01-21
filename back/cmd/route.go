@@ -20,4 +20,5 @@ func setupRoutes(app *fiber.App) {
 
 	//SALONS
 	api.Post("/salons", controllers.CreateSalon)
+	api.Get("/salons", controllers.GetSalons)
 }

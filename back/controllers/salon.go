@@ -31,13 +31,10 @@ func CreateSalon(c *fiber.Ctx) error {
 
 	salon.ID, _ = models.GenerateUUID()
 
-	database.DB.Db.Create(&salon)
+	result := database.DB.Db.Create(&salon)
 
-	// Check if the creation was successful
-	if database.DB.Db.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": database.DB.Db.Error.Error(),
-		})
+	if result.Error != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": result.Error.Error()})
 	}
 
 	// Convert the manager ID from string to UUID
@@ -50,7 +47,7 @@ func CreateSalon(c *fiber.Ctx) error {
 
 	// Find the manager by ID
 	var manager models.User
-	result := database.DB.Db.First(&manager, "id = ?", managerID)
+	result = database.DB.Db.First(&manager, "id = ?", managerID)
 
 	// Check if there is an error and the manager doesn't exist
 	if result.Error != nil && result.RowsAffected == 0 {
@@ -86,4 +83,14 @@ func CreateSalon(c *fiber.Ctx) error {
 	}
 
 	return c.Status(http.StatusOK).JSON("Le salon a bien été crée")
+}
+
+func GetSalons(c *fiber.Ctx) error {
+	var salons []models.Salon
+	result := database.DB.Db.Preload("Users").Find(&salons)
+	if result.Error != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": result.Error.Error()})
+	}
+
+	return c.JSON(salons)
 }

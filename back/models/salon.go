@@ -11,4 +11,5 @@ type Salon struct {
 	Name    string    `gorm:"type:varchar(255);not null"`
 	Address string    `gorm:"type:varchar(255);not null"`
 	Phone   string    `gorm:"type:varchar(255);not null"`
+	Users   []User    `gorm:"foreignKey:SalonID"`
 }
