@@ -34,7 +34,7 @@ func ConnectDB() {
 
 	log.Println("Connected")
 	db.Logger = logger.Default.LogMode(logger.Info)
-	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.User{}, &models.Salon{})
 
 	DB = Dbinstance{
 		Db: db,

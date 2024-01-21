@@ -17,4 +17,7 @@ func setupRoutes(app *fiber.App) {
 	admin.Post("/users", controllers.CreateUser)
 	admin.Patch("/users/:id", controllers.UpdateUser)
 	admin.Delete("/users/:id", controllers.DeleteUser)
+
+	//SALONS
+	api.Post("/salons", controllers.CreateSalon)
 }
