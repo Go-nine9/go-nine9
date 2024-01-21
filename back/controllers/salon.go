@@ -169,3 +169,52 @@ func AddStaff(c *fiber.Ctx) error {
 
 	return c.SendString("Salon successfully updated")
 }
+
+func DeleteSalon(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	// Convert the Salon Id string into UUID
+	salonId, err := uuid.Parse(id)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid salon ID format",
+		})
+	}
+
+	// Find the manager of the salon
+	var manager models.User
+	result := database.DB.Db.Where("salon_id = ? AND roles = ?", salonId, "manager").First(&manager)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Cannot find manager",
+		})
+	}
+	// Set the SalonId to null to not be deleted after
+	manager.SalonID = nil
+	result = database.DB.Db.Save(&manager)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Cannot set null to manager",
+		})
+	}
+
+	// Delete all staff related and the salon
+	var user models.User
+	result = database.DB.Db.Where("salon_id = ?", salonId).Delete(&user)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Cannot remove user Staff",
+		})
+	}
+
+	// Delete the salon
+	var salon models.Salon
+	result = database.DB.Db.Where("id = ?", salonId).Delete(&salon)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Cannot remove Salon",
+		})
+	}
+
+	return c.SendString("Salon successfully deleted")
+}
