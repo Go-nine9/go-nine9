@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/Go-nine9/go-nine9/services"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -15,12 +16,8 @@ type Base struct {
 	DeletedAt *time.Time `sql:"index" json:"deleted_at"`
 }
 
-// BeforeCreate will set a UUID rather than numeric ID.
+// Create UUID
 func (base *Base) BeforeCreate(tx *gorm.DB) error {
-	uuid, err := uuid.NewUUID()
-	if err != nil {
-		return err
-	}
-	base.ID = uuid
+	base.ID, _ = services.GenerateUUID()
 	return nil
 }
