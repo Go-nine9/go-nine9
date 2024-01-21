@@ -127,3 +127,45 @@ func UpdateSalon(c *fiber.Ctx) error {
 	}
 	return c.SendString("Salon successfully updated")
 }
+
+// Add staff
+func AddStaff(c *fiber.Ctx) error {
+	id := c.Params("id")
+	var users []models.User
+	if err := c.BodyParser(&users); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	// Convert the Salon Id string into UUID
+	salonId, err := uuid.Parse(id)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid salon ID format",
+		})
+	}
+
+	// Create user for each iteration of array
+	for i := 0; i < len(users); i++ {
+		var user models.User
+		user = users[i]
+		// Assign the salonId to staff
+		user.SalonID = &salonId
+		user.Roles = "staff"
+		user.ID, _ = models.GenerateUUID()
+
+		hashedPassword, err := models.HashPassword(user.Password)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to hash password",
+			})
+		}
+		user.Password = hashedPassword
+
+		database.DB.Db.Create(&user)
+
+	}
+
+	return c.SendString("Salon successfully updated")
+}
