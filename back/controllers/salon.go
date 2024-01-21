@@ -33,6 +33,8 @@ func CreateSalon(c *fiber.Ctx) error {
 		Phone:   salonRequest.Salon.Phone,
 	}
 
+	salon.ID, _ = models.GenerateUUID()
+
 	database.DB.Db.Create(&salon)
 
 	// Check if the creation was successful
@@ -73,6 +75,7 @@ func CreateSalon(c *fiber.Ctx) error {
 		// Assign the salonId to staff
 		user.SalonID = &salon.ID
 		user.Roles = "staff"
+		user.ID, _ = models.GenerateUUID()
 
 		hashedPassword, err := models.HashPassword(user.Password)
 		if err != nil {
