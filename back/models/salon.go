@@ -1,8 +1,14 @@
 package models
 
+import (
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
+
 type Salon struct {
-	Base
-	Name    string `gorm:"type:varchar(255);not null"`
-	Address string `gorm:"type:varchar(255);not null"`
-	Phone   string `gorm:"type:varchar(255);not null"`
+	gorm.Model
+	ID      uuid.UUID `gorm:"type:uuid;primary_key"`
+	Name    string    `gorm:"type:varchar(255);not null"`
+	Address string    `gorm:"type:varchar(255);not null"`
+	Phone   string    `gorm:"type:varchar(255);not null"`
 }

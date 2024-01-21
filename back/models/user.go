@@ -3,10 +3,12 @@ package models
 import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type User struct {
-	Base
+	gorm.Model
+	ID        uuid.UUID  `gorm:"type:uuid;primary_key"`
 	Lastname  string     `gorm:"type:varchar(255);not null"`
 	Firstname string     `gorm:"type:varchar(255);not null"`
 	Email     string     `gorm:"type:varchar(255);not null"`
@@ -21,4 +23,12 @@ func HashPassword(password string) (string, error) {
 		return "", err
 	}
 	return string(hashedPassword), nil
+}
+
+func GenerateUUID() (uuid.UUID, error) {
+	uuid, err := uuid.NewUUID()
+	if err != nil {
+		return uuid, err
+	}
+	return uuid, nil
 }
