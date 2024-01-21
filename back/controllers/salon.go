@@ -106,3 +106,24 @@ func GetSalonById(c *fiber.Ctx) error {
 	}
 	return c.JSON(salon)
 }
+
+// Update salon data
+func UpdateSalon(c *fiber.Ctx) error {
+	id := c.Params("id")
+	salon := new(models.Salon)
+
+	if err := c.BodyParser(salon); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	result := database.DB.Db.Where("id = ?", id).Updates(&salon)
+
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to update salon",
+		})
+	}
+	return c.SendString("Salon successfully updated")
+}
