@@ -22,4 +22,8 @@ func setupRoutes(app *fiber.App) {
 	api.Post("/salons", controllers.CreateSalon)
 	api.Get("/salons", controllers.GetSalons)
 	api.Get("/salons/:id", controllers.GetSalonById)
+	api.Put("/salons/:id", controllers.UpdateSalon)
+	api.Delete("/salons/:id", controllers.DeleteSalon)
+	// Add new staff member to the salon
+	api.Post("/salons/:id", controllers.AddStaff)
 }
