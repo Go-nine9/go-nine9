@@ -85,6 +85,7 @@ func CreateSalon(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON("Le salon a bien été crée")
 }
 
+// Get all salons with their staff associated
 func GetSalons(c *fiber.Ctx) error {
 	var salons []models.Salon
 	result := database.DB.Db.Preload("Users").Find(&salons)
@@ -93,4 +94,15 @@ func GetSalons(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(salons)
+}
+
+// Retrieve the salon by ID with staff associated
+func GetSalonById(c *fiber.Ctx) error {
+	id := c.Params("id")
+	var salon models.Salon
+	result := database.DB.Db.Preload("Users").Where("id = ?", id).First(&salon)
+	if result.Error != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": result.Error.Error()})
+	}
+	return c.JSON(salon)
 }
