@@ -15,10 +15,6 @@ type SalonRequest struct {
 	Manager string        `json:"manager"`
 }
 
-type SalonResponse struct {
-	Salon models.Salon `json:"salon"`
-}
-
 func CreateSalon(c *fiber.Ctx) error {
 	var salonRequest SalonRequest
 	if err := c.BodyParser(&salonRequest); err != nil {
