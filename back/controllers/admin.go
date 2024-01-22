@@ -37,6 +37,7 @@ func CreateUser(c *fiber.Ctx) error {
 			"message": "Failed to hash password",
 		})
 	}
+	user.ID, _ = models.GenerateUUID()
 	user.Password = hashedPassword
 
 	database.DB.Db.Create(&user)

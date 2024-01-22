@@ -24,3 +24,11 @@ func HashPassword(password string) (string, error) {
 	}
 	return string(hashedPassword), nil
 }
+
+func GenerateUUID() (uuid.UUID, error) {
+	uuid, err := uuid.NewUUID()
+	if err != nil {
+		return uuid, err
+	}
+	return uuid, nil
+}
