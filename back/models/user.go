@@ -1,9 +1,11 @@
 package models
 
 import (
+	"errors"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"strings"
 )
 
 type User struct {
@@ -23,6 +25,16 @@ func HashPassword(password string) (string, error) {
 		return "", err
 	}
 	return string(hashedPassword), nil
+}
+
+func VerifyPassword(hashedPassword string, password string) error {
+	if strings.HasPrefix(hashedPassword, "$2a$") {
+		return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	}
+	if hashedPassword != password {
+		return errors.New("mot de passe incorrect")
+	}
+	return nil
 }
 
 func GenerateUUID() (uuid.UUID, error) {
