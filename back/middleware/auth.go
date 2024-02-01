@@ -1,58 +1,37 @@
 package middleware
 
 import (
-	"fmt"
+	"os"
+
+	"github.com/Go-nine9/go-nine9/helper"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 )
 
-const SecretKey = "secret"
+var SecretKey = os.Getenv("JWT_SECRET")
 
-func AuthMiddleware() fiber.Handler {
+func AuthRequired() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		token := c.Query("token")
-
+		token, err := helper.GetToken(c)
 		if token == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"message": "Unauthorized: Token missing",
 			})
 		}
 
-		claims, err := parseJWT(token)
+		claims, err := helper.ParseJWT(token)
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"message": "Unauthorized: Invalid Token",
 			})
 		}
 
-		fmt.Println("Token Claims:", claims)
-
-		userRole, ok := claims["role"].(string)
-		if !ok || userRole != "admin" {
-			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-				"message": "Forbidden: Insufficient Permissions",
-			})
-		}
 		c.Locals("userClaims", claims)
 		return c.Next()
 	}
 }
 
-func parseJWT(tokenString string) (jwt.MapClaims, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SecretKey), nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok || !token.Valid {
-		return nil, jwt.ErrSignatureInvalid
-	}
-	return claims, nil
-}
-
-func RoleMiddleware(role string) fiber.Handler {
+func RoleMiddleware(roles ...string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		userClaims, ok := c.Locals("userClaims").(jwt.MapClaims)
 		if !ok {
@@ -61,12 +40,20 @@ func RoleMiddleware(role string) fiber.Handler {
 			})
 		}
 		userRole, ok := userClaims["role"].(string)
-		if !ok || userRole != role {
+		if !ok {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
 				"message": "Forbidden: Insufficient Permissions",
 			})
 		}
 
-		return c.Next()
+		for _, role := range roles {
+			if role == userRole {
+				return c.Next()
+			}
+		}
+
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"message": "Forbidden: Insufficient Permissions",
+		})
 	}
 }

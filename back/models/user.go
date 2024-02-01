@@ -17,6 +17,7 @@ type User struct {
 	Password  string     `gorm:"type:varchar(255);not null"`
 	Roles     string     `gorm:"type:varchar(255);not null"`
 	SalonID   *uuid.UUID `gorm:"type:uuid"`
+	Salon     Salon      `gorm:"foreignKey:SalonID"`
 }
 
 func HashPassword(password string) (string, error) {

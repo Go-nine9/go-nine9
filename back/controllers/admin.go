@@ -10,39 +10,41 @@ func AdminDashboard(c *fiber.Ctx) error {
 	return c.SendString("Welcome to the admin dashboard!")
 }
 
+// / USERS ///
 func GetAllUsers(c *fiber.Ctx) error {
 	var users []models.User
 	database.DB.Db.Find(&users)
 	return c.JSON(users)
 }
 
-func GetUserById(c *fiber.Ctx) error {
-	id := c.Params("id")
-	var user models.User
-	database.DB.Db.Where("id = ?", id).First(&user)
-	return c.JSON(user)
-}
+// func GetUserById(c *fiber.Ctx) error {
+// 	id := c.Params("id")
+// 	var user models.User
+// 	database.DB.Db.Where("id = ?", id).First(&user)
+// 	return c.JSON(user)
+// }
 
-func CreateUser(c *fiber.Ctx) error {
-	user := new(models.User)
-	if err := c.BodyParser(user); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err.Error(),
-		})
-	}
+// func CreateUser(c *fiber.Ctx) error {
+// 	user := new(models.User)
+// 	if err := c.BodyParser(user); err != nil {
+// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+// 			"message": err.Error(),
+// 		})
+// 	}
 
-	hashedPassword, err := models.HashPassword(user.Password)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to hash password",
-		})
-	}
-	user.ID, _ = models.GenerateUUID()
-	user.Password = hashedPassword
+// 	hashedPassword, err := models.HashPassword(user.Password)
+// 	if err != nil {
+// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+// 			"message": "Failed to hash password",
+// 		})
+// 	}
+// 	user.ID, _ = models.GenerateUUID()
 
-	database.DB.Db.Create(&user)
-	return c.Status(200).JSON(user)
-}
+// 	user.Password = hashedPassword
+
+// 	database.DB.Db.Create(&user)
+// 	return c.Status(200).JSON(user)
+// }
 
 func UpdateUser(c *fiber.Ctx) error {
 	id := c.Params("id")
