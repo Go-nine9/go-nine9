@@ -27,7 +27,10 @@ func setupRoutes(app *fiber.App) {
 	management := api.Group("/management", middleware.RoleMiddleware("manager", "admin"))
 	management.Get("/users", controllers.GetAllUsers)
 	management.Post("/users", controllers.CreateUser)
-	
+	management.Get("/users/:id", controllers.GetUserById)
+	management.Patch("/users/:id", controllers.UpdateUser)
+	management.Delete("/users/:id", controllers.DeleteUser)
+
 	//EMPLOYEE ONLY ROUTES
 	// employee := api.Group("/employee")
 	// employee.Use(controllers.RoleMiddleware("employee"))

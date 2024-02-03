@@ -119,9 +119,34 @@ func GetAllUsers(c *fiber.Ctx) error {
 			"message": "Failed to parse salonID",
 		})
 	}
-	
+
 	database.DB.Db.Where("salon_id = ?", salonID).Find(&users)
 	return c.JSON(users)
+}
+
+func GetUserById(c *fiber.Ctx) error {
+	id := c.Params("id")
+	var user models.User
+	claims, err := helper.GetClaims(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	role := claims["role"].(string)
+	if role == "manager" {
+		salonID, err := uuid.Parse(claims["salonID"].(string))
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to parse salonID",
+			})
+		}
+		database.DB.Db.Where("id = ? AND salon_id = ?", id, salonID).First(&user)
+		return c.JSON(user)
+	}
+	database.DB.Db.Where("id = ?", id).First(&user)
+	return c.JSON(user)
 }
 
 func CreateUser(c *fiber.Ctx) error {
