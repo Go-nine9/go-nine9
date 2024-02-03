@@ -196,3 +196,75 @@ func CreateUser(c *fiber.Ctx) error {
 	database.DB.Db.Create(&user)
 	return c.Status(200).JSON(user)
 }
+
+func UpdateUser(c *fiber.Ctx) error {
+	id := c.Params("id")
+	user := new(models.User)
+
+	if err := c.BodyParser(user); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	hashedPassword, err := models.HashPassword(user.Password)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to hash password",
+		})
+	}
+	user.Password = hashedPassword
+	role := user.Roles
+	if role == "manager" {
+		salonID, err := uuid.Parse(user.SalonID.String())
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to parse salonID",
+			})
+		}
+		user.SalonID = &salonID
+		user.Roles = "employee"
+		result := database.DB.Db.Where("id = ? AND salon_id = ?", id, salonID).Updates(&user)
+		if result.Error != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to update user",
+			})
+		}
+		return c.JSON(user)
+	}
+
+	result := database.DB.Db.Where("id = ?", id).Updates(&user)
+
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to update user",
+		})
+	}
+
+	return c.JSON(user)
+}
+
+func DeleteUser(c *fiber.Ctx) error {
+	user := models.User{}
+	id := c.Params("id")
+	claims, err := helper.GetClaims(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	role := claims["role"].(string)
+	if role == "manager" {
+		salonID, err := uuid.Parse(claims["salonID"].(string))
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to parse salonID",
+			})
+		}
+		database.DB.Db.Where("id = ? AND salon_id = ?", id, salonID).Delete(&user)
+		return c.JSON(user)
+	}
+	database.DB.Db.Where("id = ?", id).Delete(&user)
+	return c.JSON(user)
+}

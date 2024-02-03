@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"github.com/Go-nine9/go-nine9/database"
-	"github.com/Go-nine9/go-nine9/models" // import the models package
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -46,44 +44,44 @@ func AdminDashboard(c *fiber.Ctx) error {
 // 	return c.Status(200).JSON(user)
 // }
 
-func UpdateUser(c *fiber.Ctx) error {
-	id := c.Params("id")
-	user := new(models.User)
+// func UpdateUser(c *fiber.Ctx) error {
+// 	id := c.Params("id")
+// 	user := new(models.User)
 
-	if err := c.BodyParser(user); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err.Error(),
-		})
-	}
+// 	if err := c.BodyParser(user); err != nil {
+// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+// 			"message": err.Error(),
+// 		})
+// 	}
 
-	hashedPassword, err := models.HashPassword(user.Password)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to hash password",
-		})
-	}
-	user.Password = hashedPassword
+// 	hashedPassword, err := models.HashPassword(user.Password)
+// 	if err != nil {
+// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+// 			"message": "Failed to hash password",
+// 		})
+// 	}
+// 	user.Password = hashedPassword
 
-	result := database.DB.Db.Where("id = ?", id).Updates(&user)
+// 	result := database.DB.Db.Where("id = ?", id).Updates(&user)
 
-	if result.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to update user",
-		})
-	}
+// 	if result.Error != nil {
+// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+// 			"message": "Failed to update user",
+// 		})
+// 	}
 
-	return c.SendString("User successfully updated")
-}
+// 	return c.SendString("User successfully updated")
+// }
 
-func DeleteUser(c *fiber.Ctx) error {
-	user := models.User{}
-	id := c.Params("id")
+// func DeleteUser(c *fiber.Ctx) error {
+// 	user := models.User{}
+// 	id := c.Params("id")
 
-	result := database.DB.Db.Where("id = ?", id).Delete(&user)
-	if result.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to delete user",
-		})
-	}
-	return c.SendString("User successfully deleted")
-}
+// 	result := database.DB.Db.Where("id = ?", id).Delete(&user)
+// 	if result.Error != nil {
+// 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+// 			"message": "Failed to delete user",
+// 		})
+// 	}
+// 	return c.SendString("User successfully deleted")
+// }
