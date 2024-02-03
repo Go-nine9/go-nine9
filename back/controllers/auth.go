@@ -86,6 +86,7 @@ func LoginUser(c *fiber.Ctx) error {
 		"role":      existingUser.Roles,
 		"firstname": existingUser.Firstname,
 		"email":     existingUser.Email,
+		"salonID":   existingUser.SalonID,
 	})
 
 	token, err := claims.SignedString([]byte(SecretKey))

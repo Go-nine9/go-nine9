@@ -7,6 +7,7 @@ import (
 	"github.com/Go-nine9/go-nine9/helper"
 	"github.com/Go-nine9/go-nine9/models"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 func GetMe(c *fiber.Ctx) error {
@@ -104,14 +105,6 @@ func CreateUser(c *fiber.Ctx) error {
 			"message": err.Error(),
 		})
 	}
-	role := claims["role"].(string)
-	if role == "admin" {
-
-		fmt.Println(role)
-	}
-
-	fmt.Println(helper.GeneratePassword(8))
-	// if role != "admin"{}
 
 	user := new(models.User)
 	if err := c.BodyParser(user); err != nil {
@@ -120,16 +113,34 @@ func CreateUser(c *fiber.Ctx) error {
 		})
 	}
 
-	hashedPassword, err := models.HashPassword(user.Password)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to hash password",
-		})
+	role := claims["role"].(string)
+	roleUser := "user"
+	var salonId uuid.UUID
+
+	if role == "manager" {
+		salonID, err := uuid.Parse(claims["salonID"].(string))
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to parse salonID",
+			})
+		}
+		salonId = salonID
+		roleUser = "employee"
+
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to hash password",
+			})
+		}
+		user.Roles = roleUser
+		if salonId != uuid.Nil {
+			user.SalonID = &salonId
+		}
 	}
 	user.ID, _ = models.GenerateUUID()
-
+	hashedPassword, err := models.HashPassword(helper.GeneratePassword(8))
 	user.Password = hashedPassword
-
+	fmt.Println(user)
 	database.DB.Db.Create(&user)
 	return c.Status(200).JSON(user)
 }
