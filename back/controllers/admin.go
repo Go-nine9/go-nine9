@@ -11,11 +11,11 @@ func AdminDashboard(c *fiber.Ctx) error {
 }
 
 // / USERS ///
-func GetAllUsers(c *fiber.Ctx) error {
-	var users []models.User
-	database.DB.Db.Find(&users)
-	return c.JSON(users)
-}
+// func GetAllUsers(c *fiber.Ctx) error {
+// 	var users []models.User
+// 	database.DB.Db.Find(&users)
+// 	return c.JSON(users)
+// }
 
 // func GetUserById(c *fiber.Ctx) error {
 // 	id := c.Params("id")

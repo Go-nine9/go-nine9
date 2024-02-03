@@ -64,7 +64,7 @@ INSERT INTO "salons" ("id", "name", "address", "phone")
     VALUES ('ce801349-752c-4cee-a660-9f7cceaf7132', 'Hairstyle', '18 rue Paris,75016', '010230');
 
 INSERT INTO "users" ("id", "lastname", "firstname", "email", "password", "roles", "salon_id")
-    VALUES ('9f7ceeaf-7132-4cee-a660-ce801349-852c', 'Lastname', 'Firstname', 'email@example.com', 'password', 'admin', 'ce801349-752c-4cee-a660-9f7cceaf7132');
+    VALUES ('9f7ceeaf-7132-4cee-a660-ce801349-852c', 'Lastname', 'Firstname', 'email@example.com', 'password', 'manager', 'ce801349-752c-4cee-a660-9f7cceaf7132');
 
 INSERT INTO "users" ("id", "lastname", "firstname", "email", "password", "roles", "salon_id")
     VALUES ('9f7ceeaf-7132-4cee-a660-ce801349-853c', 'admin', 'admin', 'admin', 'admin', 'admin', NULL);

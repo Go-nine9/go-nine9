@@ -97,6 +97,33 @@ func UpdateMePassword(c *fiber.Ctx) error {
 	return c.SendString("User successfully updated")
 }
 
+func GetAllUsers(c *fiber.Ctx) error {
+	claims, err := helper.GetClaims(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	role := claims["role"].(string)
+	var users []models.User
+
+	if role == "admin" {
+		database.DB.Db.Find(&users)
+		return c.JSON(users)
+	}
+
+	salonID, err := uuid.Parse(claims["salonID"].(string))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to parse salonID",
+		})
+	}
+	
+	database.DB.Db.Where("salon_id = ?", salonID).Find(&users)
+	return c.JSON(users)
+}
+
 func CreateUser(c *fiber.Ctx) error {
 
 	claims, err := helper.GetClaims(c)
