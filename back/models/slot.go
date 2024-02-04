@@ -12,7 +12,8 @@ type Slot struct {
 	ID                  uuid.UUID `gorm:"type:uuid;primary_key"`
 	Date                time.Time `gorm:"type:date;not null"`
 	BeginningHour       time.Time `gorm:"type:timestamp;not null"`
-	EndTime             time.Time `gorm:"type:time;not null"`
+	EndTime             time.Time `gorm:"type:timestamp;not null"`
 	HairdressingStaffID uuid.UUID `gorm:"type:uuid;not null"`
 	HairdressingStaff   User      `gorm:"foreignKey:HairdressingStaffID"`
+	SalonID             uuid.UUID `gorm:"type:uuid;not null"`
 }

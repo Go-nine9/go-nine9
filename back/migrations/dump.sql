@@ -45,6 +45,7 @@ CREATE TABLE "slots"(
     "beginning_hour" TIMESTAMP(0) WITHOUT TIME ZONE NULL,
     "end_time" TIMESTAMP(0) WITHOUT TIME ZONE NULL,
     "hairdressing_staff_id" UUID NULL,
+    "salon_id" UUID NOT NULL,
     "deleted_at" TIMESTAMP(0) WITHOUT TIME ZONE NULL
 );
 ALTER TABLE
@@ -53,6 +54,8 @@ ALTER TABLE
     "reservations" ADD CONSTRAINT "reservations_slot_id_foreign" FOREIGN KEY("slot_id") REFERENCES "slots"("id");
 ALTER TABLE
     "slots" ADD CONSTRAINT "slots_hairdressing_staff_id_foreign" FOREIGN KEY("hairdressing_staff_id") REFERENCES "users"("id");
+ALTER TABLE
+    "slots" ADD CONSTRAINT "slots_salon_id_foreign" FOREIGN KEY("salon_id") REFERENCES "salons"("id");
 ALTER TABLE
     "reservations" ADD CONSTRAINT "reservations_customer_id_foreign" FOREIGN KEY("customer_id") REFERENCES "users"("id");
 ALTER TABLE
@@ -69,8 +72,8 @@ INSERT INTO "users" ("id", "lastname", "firstname", "email", "password", "roles"
 INSERT INTO "users" ("id", "lastname", "firstname", "email", "password", "roles", "salon_id")
     VALUES ('9f7ceeaf-7132-4cee-a660-ce801349-853c', 'admin', 'admin', 'admin', 'admin', 'admin', NULL);
 
-INSERT INTO "slots"("id","date","beginning_hour","end_time","hairdressing_staff_id")
-    VALUES ('9f7ceeaf-7132-4cee-a660-ce801349-854c','2021-01-01','2024-01-21 22:57:35','2024-01-21 23:57:35','9f7ceeaf-7132-4cee-a660-ce801349-852c');
+INSERT INTO "slots"("id","date","beginning_hour","end_time","hairdressing_staff_id","salon_id")
+    VALUES ('9f7ceeaf-7132-4cee-a660-ce801349-854c','2021-01-01','2024-01-21 22:57:35','2024-01-21 23:57:35','9f7ceeaf-7132-4cee-a660-ce801349-852c','ce801349-752c-4cee-a660-9f7cceaf7132');
 
 INSERT INTO "reservations"("id","slot_id","customer_id")
     VALUES ('9f7ceeaf-7132-4cee-a660-ce801349-855c', '9f7ceeaf-7132-4cee-a660-ce801349-854c', '9f7ceeaf-7132-4cee-a660-ce801349-853c');
