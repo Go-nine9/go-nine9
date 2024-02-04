@@ -7,32 +7,53 @@ import (
 )
 
 func setupRoutes(app *fiber.App) {
-	api := app.Group("/api")
 
-	// Unprotected route
-	api.Get("/", controllers.Home)
+	// PUBLIC ROUTES //
+	app.Get("/", controllers.Home)
+	app.Get("/salons", controllers.GetSalons)
+	app.Post("/salons", controllers.CreateSalon)
+	app.Get("/salons/:id", controllers.GetSalonById)
 
-	auth := api.Group("/auth")
-	auth.Post("/register", controllers.CreateNewUser)
-	auth.Post("/login", controllers.LoginUser)
+	// AUTH ROUTES //
+	app.Post("/auth/register", controllers.CreateNewUser)
+	app.Post("/auth/login", controllers.LoginUser)
 
-	admin := api.Group("/admin")
-	
-	admin.Use(middleware.AuthMiddleware())
+	// PRIVATE ROUTES /
+	api := app.Group("/api", middleware.AuthRequired())
+	api.Get("/me", controllers.GetMe)
+	api.Patch("/me", controllers.UpdateMe)
+	api.Patch("/me/password", controllers.UpdateMePassword)
+	api.Post("/salons/:id/slots/:id/reservations", controllers.CreateReservation)
 
-	// USERS routes are now protected by RoleMiddleware
-	admin.Get("/users", middleware.RoleMiddleware("admin"), controllers.GetAllUsers)
-	admin.Get("/users/:id", middleware.RoleMiddleware("admin"), controllers.GetUserById)
-	admin.Post("/users", middleware.RoleMiddleware("admin"), controllers.CreateUser)
-	admin.Patch("/users/:id", middleware.RoleMiddleware("admin"), controllers.UpdateUser)
-	admin.Delete("/users/:id", middleware.RoleMiddleware("admin"), controllers.DeleteUser)
+	// GESTION ROUTES (ADMIN AND MANAGER) //
+	management := api.Group("/management", middleware.RoleMiddleware("manager", "admin"))
 
-	//SALONS
-	api.Post("/salons", controllers.CreateSalon)
-	api.Get("/salons", controllers.GetSalons)
-	api.Get("/salons/:id", controllers.GetSalonById)
-	api.Put("/salons/:id", controllers.UpdateSalon)
-	api.Delete("/salons/:id", controllers.DeleteSalon)
-	// Add new staff member to the salon
-	api.Post("/salons/:id", controllers.AddStaff)
+	// USERS
+	management.Get("/users", controllers.GetAllUsers)
+	management.Post("/users", controllers.CreateUser)
+	management.Get("/users/:id", controllers.GetUserById)
+	management.Patch("/users/:id", controllers.UpdateUser)
+	management.Delete("/users/:id", controllers.DeleteUser)
+
+	// SALONS
+	management.Get("/salons", controllers.GetMySalons)
+	management.Post("/salons/staff", controllers.AddStaff)
+	management.Patch("/salons/:id", controllers.UpdateSalon)
+	management.Delete("/salons/:id", controllers.DeleteSalon)
+
+	// SLOTS
+	management.Get("/slots", controllers.GetAllSlots)
+	management.Post("/slots", controllers.CreateSlot)
+	management.Patch("/slots/:id", controllers.UpdateSlot)
+	management.Delete("/slots/:id", controllers.DeleteSlot)
+
+	// RESERVATIONS
+	management.Post("/reservations", controllers.CreateReservation)
+	management.Delete("/reservations/:id", controllers.DeleteReservation)
+
+	// ADMIN ONLY //
+
+	// SALONS
+	admin := api.Group("/admin", middleware.RoleMiddleware("admin"))
+	admin.Get("/salons", controllers.GetSalons)
 }

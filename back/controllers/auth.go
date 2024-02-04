@@ -1,11 +1,12 @@
 package controllers
 
 import (
+	"time"
+
 	"github.com/Go-nine9/go-nine9/database"
 	"github.com/Go-nine9/go-nine9/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"time"
 )
 
 const SecretKey = "secret"
@@ -34,7 +35,7 @@ func CreateNewUser(c *fiber.Ctx) error {
 	database.DB.Db.Create(&user)
 
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub":       user.ID,
+		"id":        user.ID,
 		"exp":       time.Now().Add(time.Hour * 24).Unix(), // 1 jour
 		"role":      user.Roles,
 		"firstname": user.Firstname,
@@ -65,6 +66,7 @@ func LoginUser(c *fiber.Ctx) error {
 			"message": "Invalid request",
 		})
 	}
+
 	var existingUser models.User
 	if err := database.DB.Db.Where("email = ?", loginUser.Email).First(&existingUser).Error; err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -79,11 +81,12 @@ func LoginUser(c *fiber.Ctx) error {
 	}
 
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub":       existingUser.ID,
+		"id":        existingUser.ID,
 		"exp":       time.Now().Add(time.Hour * 24).Unix(), // 1 jour
 		"role":      existingUser.Roles,
 		"firstname": existingUser.Firstname,
 		"email":     existingUser.Email,
+		"salonID":   existingUser.SalonID,
 	})
 
 	token, err := claims.SignedString([]byte(SecretKey))
@@ -93,8 +96,8 @@ func LoginUser(c *fiber.Ctx) error {
 		})
 	}
 	response := fiber.Map{
-		"jwt":  token,
-		"user": existingUser,
+		"jwt": token,
+		// "user": existingUser,
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response)

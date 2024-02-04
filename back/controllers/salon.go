@@ -1,75 +1,95 @@
 package controllers
 
 import (
-	"net/http"
-
 	"github.com/Go-nine9/go-nine9/database"
 	"github.com/Go-nine9/go-nine9/models"
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-type SalonRequest struct {
-	User    []models.User `json:"user"`
-	Salon   models.Salon  `json:"salon"`
-	Manager string        `json:"manager"`
+func GetMySalons(c *fiber.Ctx) error {
+	claims, err := c.Locals("userClaims").(jwt.MapClaims)
+	if !err {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "User claims not found",
+		})
+	}
+	salonId := claims["salonID"].(string)
+	var salons []models.Salon
+	result := database.DB.Db.
+		Preload("User").
+		Preload("User.Slots").
+		Find(&salons, "id = ?", salonId)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": result.Error.Error(),
+		})
+	}
+	return c.JSON(salons)
+}
+
+func GetSalons(c *fiber.Ctx) error {
+	var salons []models.Salon
+	result := database.DB.Db.
+		Preload("User").
+		Preload("User.Salon").
+		Preload("User.Slots").
+		Find(&salons)
+
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": result.Error.Error(),
+		})
+	}
+	return c.JSON(salons)
 }
 
 func CreateSalon(c *fiber.Ctx) error {
-	var salonRequest SalonRequest
-	if err := c.BodyParser(&salonRequest); err != nil {
+	claims, err := c.Locals("userClaims").(jwt.MapClaims)
+	if !err {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "User claims not found",
+		})
+	}
+
+	salon := new(models.Salon)
+	if err := c.BodyParser(salon); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
 		})
 	}
 
-	salon := models.Salon{
-		Name:    salonRequest.Salon.Name,
-		Address: salonRequest.Salon.Address,
-		Phone:   salonRequest.Salon.Phone,
-	}
-
 	salon.ID, _ = models.GenerateUUID()
-
-	result := database.DB.Db.Create(&salon)
-
-	if result.Error != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": result.Error.Error()})
-	}
-
-	// Convert the manager ID from string to UUID
-	managerID, err := uuid.Parse(salonRequest.Manager)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid manager ID format",
-		})
-	}
-
-	// Find the manager by ID
-	var manager models.User
-	result = database.DB.Db.First(&manager, "id = ?", managerID)
-
-	// Check if there is an error and the manager doesn't exist
-	if result.Error != nil && result.RowsAffected == 0 {
+	if err := c.BodyParser(salon); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Manager not found",
+			"message": err.Error(),
 		})
 	}
 
-	// Associate the salon to manager or create a new manager if not found
-	manager.SalonID = &salon.ID
-	database.DB.Db.Save(&manager)
-
-	// Create staff users
-	users := salonRequest.User
-	for i := 0; i < len(users); i++ {
+	role := claims["role"].(string)
+	if role == "user" {
 		var user models.User
-		user = users[i]
-		// Assign the salonId to staff
+		userID := claims["id"].(string)
+		user.Roles = "manager"
 		user.SalonID = &salon.ID
-		user.Roles = "staff"
-		user.ID, _ = models.GenerateUUID()
+		result := database.DB.Db.Where("id = ?", userID).Updates(&user)
+		if result.Error != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": result.Error.Error(),
+			})
+		}
+	}
 
+	if role == "manager" {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "You have already a salon",
+		})
+	}
+
+	for _, user := range salon.User {
+		user.SalonID = &salon.ID
+		user.Roles = "employee"
+		user.ID, _ = models.GenerateUUID()
 		hashedPassword, err := models.HashPassword(user.Password)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -77,40 +97,78 @@ func CreateSalon(c *fiber.Ctx) error {
 			})
 		}
 		user.Password = hashedPassword
-
-		database.DB.Db.Create(&user)
-
+		result := database.DB.Db.Create(&user)
+		if result.Error != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": result.Error.Error(),
+			})
+		}
 	}
 
-	return c.Status(http.StatusOK).JSON("Le salon a bien été crée")
-}
-
-// Get all salons with their staff associated
-func GetSalons(c *fiber.Ctx) error {
-	var salons []models.Salon
-	result := database.DB.Db.Preload("Users").Find(&salons)
+	result := database.DB.Db.Create(&salon)
 	if result.Error != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": result.Error.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": result.Error.Error(),
+		})
 	}
-
-	return c.JSON(salons)
+	return c.Status(200).JSON("salon")
 }
 
-// Retrieve the salon by ID with staff associated
 func GetSalonById(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var salon models.Salon
-	result := database.DB.Db.Preload("Users").Where("id = ?", id).First(&salon)
+	result := database.DB.Db.Preload("User").Preload("User.Slots").Where("id = ?", id).First(&salon)
 	if result.Error != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": result.Error.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": result.Error.Error(),
+		})
 	}
 	return c.JSON(salon)
 }
 
-// Update salon data
+func AddStaff(c *fiber.Ctx) error {
+	salon := new(models.Salon)
+	if err := c.BodyParser(salon); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	for _, user := range salon.User {
+		user.SalonID = &salon.ID
+		user.Roles = "employee"
+		user.ID, _ = models.GenerateUUID()
+		hashedPassword, err := models.HashPassword(user.Password)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to hash password",
+			})
+		}
+		user.Password = hashedPassword
+		result := database.DB.Db.Create(&user)
+		if result.Error != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": result.Error.Error(),
+			})
+		}
+	}
+	return c.Status(200).JSON(salon)
+}
+
 func UpdateSalon(c *fiber.Ctx) error {
 	id := c.Params("id")
 	salon := new(models.Salon)
+	claims, err := c.Locals("userClaims").(jwt.MapClaims)
+	if !err {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "User claims not found",
+		})
+
+	}
+	role := claims["role"].(string)
+	if role == "manager" {
+		id = claims["salonID"].(string)
+	}
 
 	if err := c.BodyParser(salon); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -128,93 +186,26 @@ func UpdateSalon(c *fiber.Ctx) error {
 	return c.SendString("Salon successfully updated")
 }
 
-// Add staff
-func AddStaff(c *fiber.Ctx) error {
-	id := c.Params("id")
-	var users []models.User
-	if err := c.BodyParser(&users); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err.Error(),
-		})
-	}
-
-	// Convert the Salon Id string into UUID
-	salonId, err := uuid.Parse(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid salon ID format",
-		})
-	}
-
-	// Create user for each iteration of array
-	for i := 0; i < len(users); i++ {
-		var user models.User
-		user = users[i]
-		// Assign the salonId to staff
-		user.SalonID = &salonId
-		user.Roles = "staff"
-		user.ID, _ = models.GenerateUUID()
-
-		hashedPassword, err := models.HashPassword(user.Password)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Failed to hash password",
-			})
-		}
-		user.Password = hashedPassword
-
-		database.DB.Db.Create(&user)
-
-	}
-
-	return c.SendString("Salon successfully updated")
-}
-
 func DeleteSalon(c *fiber.Ctx) error {
 	id := c.Params("id")
-
-	// Convert the Salon Id string into UUID
-	salonId, err := uuid.Parse(id)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid salon ID format",
-		})
-	}
-
-	// Find the manager of the salon
-	var manager models.User
-	result := database.DB.Db.Where("salon_id = ? AND roles = ?", salonId, "manager").First(&manager)
-	if result.Error != nil {
+	claims, err := c.Locals("userClaims").(jwt.MapClaims)
+	if !err {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Cannot find manager",
-		})
-	}
-	// Set the SalonId to null to not be deleted after
-	manager.SalonID = nil
-	result = database.DB.Db.Save(&manager)
-	if result.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Cannot set null to manager",
+			"message": "User claims not found",
 		})
 	}
 
-	// Delete all staff related and the salon
-	var user models.User
-	result = database.DB.Db.Where("salon_id = ?", salonId).Delete(&user)
-	if result.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Cannot remove user Staff",
-		})
+	role := claims["role"].(string)
+	if role == "manager" {
+		id = claims["salonID"].(string)
 	}
 
-	// Delete the salon
 	var salon models.Salon
-	result = database.DB.Db.Where("id = ?", salonId).Delete(&salon)
+	result := database.DB.Db.Where("id = ?", id).Delete(&salon)
 	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Cannot remove Salon",
+			"message": result.Error.Error(),
 		})
 	}
-
-	return c.SendString("Salon successfully deleted")
+	return c.Status(200).JSON(salon)
 }
