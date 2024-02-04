@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"fmt"
-
 	"github.com/Go-nine9/go-nine9/database"
 	"github.com/Go-nine9/go-nine9/helper"
 	"github.com/Go-nine9/go-nine9/models"
@@ -20,7 +18,10 @@ func GetMe(c *fiber.Ctx) error {
 
 	id := claims["id"].(string)
 	var user models.User
-	database.DB.Db.Where("id = ?", id).First(&user)
+	database.DB.Db.
+		Preload("Salon").
+		Where("id = ?", id).
+		First(&user)
 	return c.JSON(user)
 }
 
@@ -109,7 +110,9 @@ func GetAllUsers(c *fiber.Ctx) error {
 	var users []models.User
 
 	if role == "admin" {
-		database.DB.Db.Find(&users)
+		database.DB.Db.
+			Preload("Salon").
+			Find(&users)
 		return c.JSON(users)
 	}
 
@@ -119,8 +122,10 @@ func GetAllUsers(c *fiber.Ctx) error {
 			"message": "Failed to parse salonID",
 		})
 	}
-
-	database.DB.Db.Where("salon_id = ?", salonID).Find(&users)
+	database.DB.Db.
+		Preload("Salon").
+		Where("salon_id = ?", salonID).
+		Find(&users)
 	return c.JSON(users)
 }
 
@@ -145,7 +150,10 @@ func GetUserById(c *fiber.Ctx) error {
 		database.DB.Db.Where("id = ? AND salon_id = ?", id, salonID).First(&user)
 		return c.JSON(user)
 	}
-	database.DB.Db.Where("id = ?", id).First(&user)
+	database.DB.Db.
+		Preload("Salon").
+		Where("id = ?", id).
+		First(&user)
 	return c.JSON(user)
 }
 
@@ -178,12 +186,6 @@ func CreateUser(c *fiber.Ctx) error {
 		}
 		salonId = salonID
 		roleUser = "employee"
-
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Failed to hash password",
-			})
-		}
 		user.Roles = roleUser
 		if salonId != uuid.Nil {
 			user.SalonID = &salonId
@@ -191,8 +193,12 @@ func CreateUser(c *fiber.Ctx) error {
 	}
 	user.ID, _ = models.GenerateUUID()
 	hashedPassword, err := models.HashPassword(helper.GeneratePassword(8))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to hash password",
+		})
+	}
 	user.Password = hashedPassword
-	fmt.Println(user)
 	database.DB.Db.Create(&user)
 	return c.Status(200).JSON(user)
 }
