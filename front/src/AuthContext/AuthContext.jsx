@@ -5,10 +5,12 @@ export const AuthContext = createContext();
 // eslint-disable-next-line react/prop-types
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isManager, setIsManager] = useState(false);
 
   useEffect(() => {
     const token = getCookie('authToken');
     setIsAuthenticated(!!token);
+    setIsManager(!!isManager)
   }, []);
 
   const login = async (email, password) => {
@@ -68,6 +70,7 @@ export function AuthProvider({ children }) {
 
       if (authToken) {
         setIsAuthenticated(true);
+        setIsManager(role === "manager" ? true : false)
         setCookie('authToken', authToken, 1);
       }
     } catch (err) {
@@ -83,6 +86,7 @@ export function AuthProvider({ children }) {
   const authContextValue = useMemo(
     () => ({
       isAuthenticated,
+      isManager,
       login,
       logout,
       register,
