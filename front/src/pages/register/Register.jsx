@@ -9,6 +9,7 @@ function Register() {
   const [lastname, setLastname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState("users");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const { register, isAuthenticated } = useContext(AuthContext);
@@ -22,12 +23,12 @@ function Register() {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (!firstname || !lastname || !email || !password) {
+    if (!firstname || !lastname || !email || !password || !role) {
       setError('Veuillez remplir tous les champs.');
       return;
     }
     try {
-      await register(firstname, lastname, email, password);
+      await register(firstname, lastname, email, password, role);
       navigate('/');
     } catch (err) {
       setError(err.message);
@@ -81,6 +82,21 @@ function Register() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
+          <fieldset>
+  <legend>S'inscrire en tant que</legend>
+
+  <div>
+    <input type="radio" id="user" name="user" value="users" onChange={(e)=>{setRole(e.target.value)}} />
+    <label for="huey">Utilisateur</label>
+  </div>
+
+  <div>
+    <input type="radio" id="user" name="user" value="manager" onChange={(e)=>{setRole(e.target.value)}} />
+    <label for="dewey">Professionnel</label>
+  </div>
+
+</fieldset>
+
           <button onClick={(event) => handleSubmit(event)}>S'inscrire</button>
           {error && <p className="error">{error}</p>}
         </form>

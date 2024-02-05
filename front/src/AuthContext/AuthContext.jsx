@@ -41,9 +41,9 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register = async (firstname, lastname, email, password) => {
+  const register = async (firstname, lastname, email, password, role) => {
     try {
-      const response = await fetch('http://localhost:8097/api/auth/register', {
+      const response = await fetch('http://localhost:8097/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -54,6 +54,7 @@ export function AuthProvider({ children }) {
           lastname,
           email,
           password,
+          role
         }),
       });
   
