@@ -1,19 +1,25 @@
 import { createContext, useEffect, useMemo, useState } from 'react';
+import { jwtDecode } from "jwt-decode";
+
 
 export const AuthContext = createContext();
 
 // eslint-disable-next-line react/prop-types
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isManager, setIsManager] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
 
   useEffect(() => {
     const token = getCookie('authToken');
     setIsAuthenticated(!!token);
+    setIsManager(!!isManager)
+    setIsStaff(!!isStaff)
   }, []);
 
   const login = async (email, password) => {
     try {
-      const response = await fetch('http://localhost:8097/api/auth/login', {
+      const response = await fetch('http://localhost:8097/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -32,7 +38,10 @@ export function AuthProvider({ children }) {
 
       const { jwt: authToken } = await response.json();
 
+
       if (authToken) {
+        const Newrole = getRole(authToken)
+        setIsManager(Newrole === "manager" ? true : false)
         setIsAuthenticated(true);
         setCookie('authToken', authToken, 1); 
       }
@@ -41,9 +50,9 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register = async (firstname, lastname, email, password) => {
+  const register = async (firstname, lastname, email, password, role) => {
     try {
-      const response = await fetch('http://localhost:8097/api/auth/register', {
+      const response = await fetch('http://localhost:8097/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -54,6 +63,7 @@ export function AuthProvider({ children }) {
           lastname,
           email,
           password,
+          "Roles" : role
         }),
       });
   
@@ -67,6 +77,8 @@ export function AuthProvider({ children }) {
 
       if (authToken) {
         setIsAuthenticated(true);
+        const Newrole = getRole(authToken)
+        setIsManager(Newrole === "manager" ? true : false)
         setCookie('authToken', authToken, 1);
       }
     } catch (err) {
@@ -82,6 +94,7 @@ export function AuthProvider({ children }) {
   const authContextValue = useMemo(
     () => ({
       isAuthenticated,
+      isManager,
       login,
       logout,
       register,
@@ -105,4 +118,10 @@ function getCookie(name) {
 
 function deleteCookie(name) {
   document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure;`;
+}
+
+function getRole(jwt){
+  const decodedHeader = jwtDecode(jwt);
+  return decodedHeader.role
+
 }

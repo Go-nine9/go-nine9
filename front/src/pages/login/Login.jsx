@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import './login.css';
 import { AuthContext } from '../../AuthContext/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -63,6 +63,7 @@ function Login() {
           <button onClick={(event) => handleSubmit(event)}>se connecter</button>
           {error && <p className="error">{error}</p>}
         </form>
+        <Link to="/register">Vous n'êtes pas inscrits ? </Link>
       </div>
     </div>
   );

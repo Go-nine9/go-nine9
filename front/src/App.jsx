@@ -6,9 +6,10 @@ import Login from './pages/login/Login';
 import { Routes, Route, BrowserRouter, useNavigate } from 'react-router-dom';
 import Home from './pages/home/Home';
 import Register from './pages/register/Register';
+import Dashboard from './pages/Manager/Dashboard';
 
 function Layout() {
-  const { isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated, isManager, logout} = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,8 +25,12 @@ function Layout() {
   return (
     <div>
       <section>
+      <header>
+      <h1> Planity </h1>
+        <button onClick={logout}> Se déconnecter </button>
+      </header>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={isManager ? <Dashboard />: <Home />} />
         </Routes>
       </section>
     </div>
