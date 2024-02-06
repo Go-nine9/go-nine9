@@ -63,7 +63,7 @@ export function AuthProvider({ children }) {
           lastname,
           email,
           password,
-          role
+          "Roles" : role
         }),
       });
   

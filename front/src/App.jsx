@@ -9,7 +9,7 @@ import Register from './pages/register/Register';
 import Dashboard from './pages/Manager/Dashboard';
 
 function Layout() {
-  const { isAuthenticated, isManager} = useContext(AuthContext);
+  const { isAuthenticated, isManager, logout} = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,6 +25,10 @@ function Layout() {
   return (
     <div>
       <section>
+      <header>
+      <h1> Planity </h1>
+        <button onClick={logout}> Se déconnecter </button>
+      </header>
         <Routes>
           <Route path="/" element={isManager ? <Dashboard />: <Home />} />
         </Routes>
