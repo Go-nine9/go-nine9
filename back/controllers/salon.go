@@ -1,6 +1,7 @@
 package controllers
 
 import (
+
 	"github.com/Go-nine9/go-nine9/database"
 	"github.com/Go-nine9/go-nine9/models"
 	"github.com/gofiber/fiber/v2"
@@ -14,7 +15,15 @@ func GetMySalons(c *fiber.Ctx) error {
 			"message": "User claims not found",
 		})
 	}
+
+	if claims["salonID"] == nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "noon",
+		})
+	}
+
 	salonId := claims["salonID"].(string)
+
 	var salons []models.Salon
 	result := database.DB.Db.
 		Preload("User").
