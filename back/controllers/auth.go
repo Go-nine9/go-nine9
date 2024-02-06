@@ -28,12 +28,18 @@ func CreateNewUser(c *fiber.Ctx) error {
 	}
 	user.Password = hashedPassword
 
+	user.ID, err = models.GenerateUUID()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Could not generate UUID",
+		})
+	}
 	// Attribution automatique du rôle "users"
-	user.Roles = "users"
-
+	if user.Roles == "" {
+		user.Roles = "users"
+	}
 	// Création de l'utilisateur dans la base de données
 	database.DB.Db.Create(&user)
-
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":        user.ID,
 		"exp":       time.Now().Add(time.Hour * 24).Unix(), // 1 jour
@@ -48,12 +54,10 @@ func CreateNewUser(c *fiber.Ctx) error {
 			"message": "Could not generate token",
 		})
 	}
-
 	userWithToken := fiber.Map{
 		"user": user,
 		"jwt":  token,
 	}
-
 	return c.Status(200).JSON(userWithToken)
 }
 
