@@ -13,6 +13,8 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const token = getCookie('authToken');
     setIsAuthenticated(!!token);
+    const role = getRole(token)
+    setIsManager(role === "manager" ? true : false)
     setIsStaff(!!isStaff)
   }, []);
 
@@ -87,6 +89,7 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     setIsAuthenticated(false);
+    setIsManager(false); 
     deleteCookie('authToken');
   };
 
@@ -98,7 +101,7 @@ export function AuthProvider({ children }) {
       logout,
       register,
     }),
-    [isAuthenticated],
+    [isAuthenticated, isManager],
   );
 
   return <AuthContext.Provider value={authContextValue}>{children}</AuthContext.Provider>;
