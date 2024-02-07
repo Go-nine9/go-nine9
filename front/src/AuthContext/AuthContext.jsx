@@ -13,7 +13,6 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const token = getCookie('authToken');
     setIsAuthenticated(!!token);
-    setIsManager(!!isManager)
     setIsStaff(!!isStaff)
   }, []);
 
@@ -110,7 +109,7 @@ function setCookie(name, value, days) {
   document.cookie = `${name}=${value}; expires=${expires}; path=/; secure;`;
 }
 
-function getCookie(name) {
+ export  function getCookie(name) {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) return parts.pop().split(';').shift();
@@ -120,8 +119,15 @@ function deleteCookie(name) {
   document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure;`;
 }
 
-function getRole(jwt){
+export  function getRole(jwt){
   const decodedHeader = jwtDecode(jwt);
   return decodedHeader.role
+
+}
+
+export  function getJWT(jwt){
+  const decodedJWT = jwtDecode(jwt);
+  console.log(jwt)
+  return decodedJWT
 
 }
