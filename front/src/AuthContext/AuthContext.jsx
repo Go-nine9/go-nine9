@@ -12,10 +12,14 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const token = getCookie('authToken');
-    setIsAuthenticated(!!token);
+    if (token){
+      setIsAuthenticated(token === undefined  ? true : false );
     const role = getRole(token)
     setIsManager(role === "manager" ? true : false)
     setIsStaff(!!isStaff)
+
+    }
+    
   }, []);
 
   const login = async (email, password) => {

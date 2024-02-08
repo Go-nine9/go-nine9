@@ -3,9 +3,9 @@ import { Routes, Route, BrowserRouter, useNavigate } from 'react-router-dom';
 import { AuthContext, AuthProvider } from './AuthContext/AuthContext';
 import Login from './pages/login/Login';
 import Home from './pages/home/Home';
-import Register from './pages/register/Register';
 import Dashboard from './pages/Manager/Dashboard';
 import CreateSalons from './pages/Manager/CreateSalons';
+import Register from './pages/register/Register';
 
 function App() {
   const { isAuthenticated, isManager } = useContext(AuthContext);
