@@ -10,7 +10,7 @@ const Dashboard = () => {
   const getSalon = async (token) =>{
     try {
       const response = await fetch('http://localhost:8097/api/management/salons', {
-        method: 'GET',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -43,7 +43,7 @@ const Dashboard = () => {
 
   return (
     <div>
-    Hello
+    Dashboard
       
     </div>
   )
