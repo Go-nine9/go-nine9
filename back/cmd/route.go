@@ -11,7 +11,7 @@ func setupRoutes(app *fiber.App) {
 	// PUBLIC ROUTES //
 	app.Get("/", controllers.Home)
 	app.Get("/salons", controllers.GetSalons)
-	app.Post("/salons", controllers.CreateSalon)
+
 	app.Get("/salons/:id", controllers.GetSalonById)
 
 	// AUTH ROUTES //
@@ -24,6 +24,7 @@ func setupRoutes(app *fiber.App) {
 	api.Patch("/me", controllers.UpdateMe)
 	api.Patch("/me/password", controllers.UpdateMePassword)
 	api.Post("/salons/:id/slots/:id/reservations", controllers.CreateReservation)
+	api.Post("/salons", controllers.CreateSalon)
 
 	// GESTION ROUTES (ADMIN AND MANAGER) //
 	management := api.Group("/management", middleware.RoleMiddleware("manager", "admin"))
