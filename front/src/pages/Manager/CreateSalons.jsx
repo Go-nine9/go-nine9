@@ -1,5 +1,7 @@
 import React, {useState} from 'react'
-import { getCookie } from '../../AuthContext/AuthContext';
+import { getCookie, setCookie } from '../../AuthContext/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
 
 const CreateSalons = () => {
     const [salon, setSalon] = useState({
@@ -11,7 +13,8 @@ const CreateSalons = () => {
     const [errors, setErrors] = useState("")
 
     const token = getCookie("authToken")
-    console.log(token)
+    const navigate = useNavigate();
+
 
 
     // Change les valeurs du salon
@@ -39,6 +42,12 @@ const CreateSalons = () => {
               console.log(errorResponse)
               setErrors(errorResponse.message || 'Échec de la requête d\'inscription');
             }
+            const Goodresponse = await response.json();
+            console.log(Goodresponse)
+            setCookie('authToken', Goodresponse.jwt , 1);
+            setErrors("")
+            navigate("/admin/")
+            
 
           } catch (err) {
             setErrors(err.message || 'Une erreur inattendue s\'est produite');

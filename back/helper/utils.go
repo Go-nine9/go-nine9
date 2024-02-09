@@ -5,10 +5,12 @@ import (
 	"math/rand"
 	"os"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 var SecretKey = os.Getenv("JWT_SECRET")
@@ -88,6 +90,33 @@ func isOwner(user_role string) bool {
 		return true
 	}
 	return false
+}
+
+var jwtKey = os.Getenv("JWT_SECRET")
+
+func GenerateToken(id uuid.UUID, role string, firstname string, email string, salonID uuid.UUID) (string, error) {
+	NewClaim := jwt.MapClaims{
+		"id":        id.String(),
+		"exp":       time.Now().Add(time.Hour * 24).Unix(), // 1 jour
+		"role":      role,
+		"firstname": firstname,
+		"email":     email,
+		"salonID":   salonID.String(),
+	}
+
+	fmt.Print(NewClaim)
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, NewClaim)
+
+	fmt.Print(token)
+
+	signedToken, err := token.SignedString([]byte(jwtKey))
+	fmt.Print(err)
+	if err != nil {
+		return "", err
+	}
+
+	return signedToken, nil
 }
 
 // func RoleMiddleware(c *fiber.Ctx) error {

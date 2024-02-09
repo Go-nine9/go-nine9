@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/Go-nine9/go-nine9/database"
+	"github.com/Go-nine9/go-nine9/helper"
 	"github.com/Go-nine9/go-nine9/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -136,6 +137,13 @@ func CreateSalon(c *fiber.Ctx) error {
 		})
 	}
 
+	signedToken, ok := helper.GenerateToken(manager.ID, manager.Roles, manager.Firstname, manager.Email, salon.ID)
+
+	if ok != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Could not ",
+		})
+	}
 	// Create staff users
 	users := salonRequest.User
 	for i := 0; i < len(users); i++ {
@@ -162,7 +170,12 @@ func CreateSalon(c *fiber.Ctx) error {
 
 	}
 
-	return c.Status(fiber.StatusOK).JSON("salon")
+	response := fiber.Map{
+		"jwt": signedToken,
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response)
+
 }
 
 func GetSalonById(c *fiber.Ctx) error {

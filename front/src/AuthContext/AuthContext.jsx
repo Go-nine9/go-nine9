@@ -111,7 +111,7 @@ export function AuthProvider({ children }) {
   return <AuthContext.Provider value={authContextValue}>{children}</AuthContext.Provider>;
 }
 
-function setCookie(name, value, days) {
+export function setCookie(name, value, days) {
   const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
   document.cookie = `${name}=${value}; expires=${expires}; path=/; secure;`;
 }
