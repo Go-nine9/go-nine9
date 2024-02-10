@@ -6,6 +6,7 @@ import Home from './pages/home/Home';
 import Dashboard from './pages/Manager/Dashboard';
 import CreateSalons from './pages/Manager/CreateSalons';
 import Register from './pages/register/Register';
+import Salon from './pages/salons/Salon';
 
 function App() {
   const { isAuthenticated, isManager } = useContext(AuthContext);
@@ -21,7 +22,8 @@ function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/*" element={<Login />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/salons/:id" element={<Salon />} />
     </Routes>
   );
 

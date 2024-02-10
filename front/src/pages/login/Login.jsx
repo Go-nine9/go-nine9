@@ -36,34 +36,46 @@ function Login() {
 
   return (
     <div className="container-page">
-      <div className="login-container">
-        <h1 className="login-title">Bienvenue chez Gonine</h1>
-        <form action="" className="container">
-          <h2>se connecter</h2>
-          <label htmlFor="">
-            <input
-              type="text"
-              placeholder="mon@gmail.com"
-              name="email"
-              className="form-control"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </label>
-          <label htmlFor="">
-            <input
-              type="password"
-              placeholder="Password"
-              className="form-control"
-              name="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </label>
-          <button onClick={(event) => handleSubmit(event)}>se connecter</button>
-          {error && <p className="error">{error}</p>}
-        </form>
-        <Link to="/register">Vous n'êtes pas inscrits ? </Link>
+      <div className="left">
+        <div className="login-container">
+          <h1 className="login-title">Vous avez déjà utilié Gonine ?</h1>
+          <form action="" className="form-container">
+            <label htmlFor="emailInput" className="email">
+              Email *
+              <input
+                id="emailInput"
+                type="text"
+                placeholder="Email"
+                name="email"
+                className="form-control"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </label>
+            <label htmlFor="passwordInput" className='password'>
+              Mot de passe *
+              <input
+                id='passwordInput'
+                type="password"
+                placeholder="Mot de passe"
+                className="form-control"
+                name="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </label>
+            <button onClick={(event) => handleSubmit(event)} className='btn-primary'>Se connecter</button>
+            {error && <p className="error">{error}</p>}
+          </form>
+          <span className="separation">ou</span>
+          <div className="register">
+            <h2>Nouveau sur Gonine?</h2>
+            <Link to="/register" className='btn-secondary'>Créer mon compte</Link>
+          </div>
+        </div>
+      </div>
+      <div className="right">
+        <img src="https://res.cloudinary.com/planity/image/upload/q_auto,f_auto/v1701340648/portail/illustrations/LOGIN/2023/3.jpg" alt="" />
       </div>
     </div>
   );
