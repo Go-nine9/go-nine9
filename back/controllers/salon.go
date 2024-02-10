@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/Go-nine9/go-nine9/database"
@@ -247,28 +248,31 @@ func AddStaff(c *fiber.Ctx) error {
 
 func UpdateSalon(c *fiber.Ctx) error {
 	id := c.Params("id")
-	salon := new(models.Salon)
 	claims, err := c.Locals("userClaims").(jwt.MapClaims)
 	if !err {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "User claims not found",
 		})
-
 	}
-	role := claims["role"].(string)
-	if role == "manager" {
-		id = claims["salonID"].(string)
-	}
+	salon := new(models.Salon)
 
 	if err := c.BodyParser(salon); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
 		})
 	}
+	// If manager we get the id in the token, if admin, we retrieve the id in the path
+	role := claims["role"].(string)
+	if role == "manager" {
+		salon.ID, _ = uuid.Parse(claims["salonID"].(string))
+	} else {
+		salon.ID, _ = uuid.Parse(id)
+	}
 
-	result := database.DB.Db.Where("id = ?", id).Updates(&salon)
+	result := database.DB.Db.Updates(&salon)
 
 	if result.Error != nil {
+		fmt.Print(result.Error)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to update salon",
 		})
