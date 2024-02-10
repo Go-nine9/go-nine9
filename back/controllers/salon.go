@@ -191,17 +191,45 @@ func GetSalonById(c *fiber.Ctx) error {
 }
 
 func AddStaff(c *fiber.Ctx) error {
-	salon := new(models.Salon)
-	if err := c.BodyParser(salon); err != nil {
+	// Retrieve user claims
+	userClaims, ok := c.Locals("userClaims").(jwt.MapClaims)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "User claims not found",
+		})
+	}
+
+	// Parse salonID from claims
+	salonIDClaim, ok := userClaims["salonID"]
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "SalonID not found in claims",
+		})
+	}
+
+	salonID, err := uuid.Parse(salonIDClaim.(string))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to parse salonID",
+		})
+	}
+
+	var users []models.User
+	if err := c.BodyParser(&users); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
 		})
 	}
 
-	for _, user := range salon.User {
-		user.SalonID = &salon.ID
-		user.Roles = "employee"
+	// Create user for each iteration of array
+	for i := 0; i < len(users); i++ {
+		var user models.User
+		user = users[i]
+		// Assign the salonId to staff
+		user.SalonID = &salonID
+		user.Roles = "staff"
 		user.ID, _ = models.GenerateUUID()
+
 		hashedPassword, err := models.HashPassword(user.Password)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -209,14 +237,12 @@ func AddStaff(c *fiber.Ctx) error {
 			})
 		}
 		user.Password = hashedPassword
-		result := database.DB.Db.Create(&user)
-		if result.Error != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": result.Error.Error(),
-			})
-		}
+
+		database.DB.Db.Create(&user)
+
 	}
-	return c.Status(200).JSON(salon)
+
+	return c.SendString("Salon successfully updated")
 }
 
 func UpdateSalon(c *fiber.Ctx) error {
