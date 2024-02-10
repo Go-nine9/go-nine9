@@ -7,6 +7,8 @@ import Dashboard from './pages/Manager/Dashboard';
 import CreateSalons from './pages/Manager/CreateSalons';
 import Register from './pages/register/Register';
 import Salon from './pages/salons/Salon';
+import AddStaff from './pages/Manager/AddStaff';
+import ModifyMySalon from './pages/Manager/ModifyStaff';
 
 function App() {
   const { isAuthenticated, isManager } = useContext(AuthContext);
@@ -47,6 +49,8 @@ function StaffRoutes() {
     <Routes>
       <Route path="/" element={<Dashboard />} />
       <Route path="/create" element={<CreateSalons />} />
+      <Route path="/addStaff" element={<AddStaff />} />
+      <Route path="/modify" element={<ModifyMySalon />} />
     </Routes>
   );
 }

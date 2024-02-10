@@ -1,16 +1,17 @@
 import React, {useEffect, useState} from 'react'
 import { getCookie, getJWT } from '../../AuthContext/AuthContext';
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 
 const Dashboard = () => {
   const [salon, setSalon] = useState();
+  const [MyToken, setMyToken] = useState();
   const navigate = useNavigate();
 
   const getSalon = async (token) =>{
     try {
       const response = await fetch('http://localhost:8097/api/management/salons', {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -22,7 +23,33 @@ const Dashboard = () => {
         const errorResponse = await response.json();
         throw new Error(errorResponse.message || 'Échec de la requête d\'inscription');
       }
-      setSalon(response.data)
+
+      const goodResponse = await response.json();
+      console.log(goodResponse[0])
+      setSalon(goodResponse[0])
+  
+    } catch (err) {
+      throw new Error(err.message || 'Une erreur inattendue s\'est produite');
+    }
+  }
+
+  const handleDeleteSalon = async () =>{
+    try {
+      const response = await fetch(`http://localhost:8097/api/management/salons/${salon.ID}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${MyToken}`
+        },
+        mode: 'cors',
+      });
+  
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.message || 'Échec de la requête d\'inscription');
+      }else{
+        navigate('/admin/create')
+      }
   
     } catch (err) {
       throw new Error(err.message || 'Une erreur inattendue s\'est produite');
@@ -35,6 +62,7 @@ const Dashboard = () => {
     const salonID = token.salonID
     if(salonID !== null){
        getSalon(cookie)
+       setMyToken(cookie)
     }else{
       navigate('/admin/create')
     }
@@ -43,7 +71,27 @@ const Dashboard = () => {
 
   return (
     <div>
-    Dashboard
+   <h1> Dashboard de mon salon </h1>
+   {salon && <Link to="/admin/modify" state={{ state: salon }} ><button> Modifier mon salon </button></Link>}
+   <Link to="/admin/addStaff"><button> Ajouter des salariés </button></Link>
+   <button onClick={handleDeleteSalon}> Supprimer mon salon </button>
+   {salon ?
+   <>
+    <h2>{salon.Name}</h2>
+    <p>adresse de mon salon : {salon.Address}</p>
+    <p>Téléphone: {salon.Phone}</p>
+    <h2>L'équipe</h2>
+    {salon.User.map((user)=>(
+      <>
+      <h2>{user.Firstname}  {user.Lastname} {user.Roles === "manager" && "(moi)"}</h2>
+      <p>{user.Email} </p>
+      <p>{user.Roles} </p>
+      </>
+    ))}
+
+    </>  
+    
+   : <h1> Vous n'avez pas encore de salon snif <Link to="/admin/create"> Cliquez ici pour en créer un </Link></h1> }
       
     </div>
   )
