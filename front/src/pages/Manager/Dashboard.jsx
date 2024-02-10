@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [salon, setSalon] = useState();
+  const [MyToken, setMyToken] = useState();
   const navigate = useNavigate();
 
   const getSalon = async (token) =>{
@@ -32,12 +33,36 @@ const Dashboard = () => {
     }
   }
 
+  const handleDeleteSalon = async () =>{
+    try {
+      const response = await fetch(`http://localhost:8097/api/management/salons/${salon.ID}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${MyToken}`
+        },
+        mode: 'cors',
+      });
+  
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.message || 'Échec de la requête d\'inscription');
+      }else{
+        navigate('/admin/create')
+      }
+  
+    } catch (err) {
+      throw new Error(err.message || 'Une erreur inattendue s\'est produite');
+    }
+  }
+
   useEffect(() => {
     const cookie = getCookie('authToken');
     const token = getJWT(cookie)
     const salonID = token.salonID
     if(salonID !== null){
        getSalon(cookie)
+       setMyToken(cookie)
     }else{
       navigate('/admin/create')
     }
@@ -47,9 +72,9 @@ const Dashboard = () => {
   return (
     <div>
    <h1> Dashboard de mon salon </h1>
-   <Link to="/admin/modify"><button> Modifier mon salon </button></Link>
+   {salon && <Link to="/admin/modify" state={{ state: salon }} ><button> Modifier mon salon </button></Link>}
    <Link to="/admin/addStaff"><button> Ajouter des salariés </button></Link>
-   <button> Supprimer mon salon </button>
+   <button onClick={handleDeleteSalon}> Supprimer mon salon </button>
    {salon ?
    <>
     <h2>{salon.Name}</h2>
