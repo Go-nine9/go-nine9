@@ -282,24 +282,49 @@ func UpdateSalon(c *fiber.Ctx) error {
 
 func DeleteSalon(c *fiber.Ctx) error {
 	id := c.Params("id")
-	claims, err := c.Locals("userClaims").(jwt.MapClaims)
-	if !err {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "User claims not found",
+
+	// Convert the Salon Id string into UUID
+	salonId, err := uuid.Parse(id)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid salon ID format",
 		})
 	}
-
-	role := claims["role"].(string)
-	if role == "manager" {
-		id = claims["salonID"].(string)
-	}
-
-	var salon models.Salon
-	result := database.DB.Db.Where("id = ?", id).Delete(&salon)
+	// Find the manager of the salon
+	var manager models.User
+	result := database.DB.Db.Where("salon_id = ? AND roles = ?", salonId, "manager").First(&manager)
 	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": result.Error.Error(),
+			"message": "Cannot find manager",
 		})
 	}
-	return c.Status(200).JSON(salon)
+
+	// Set the SalonId to null to not be deleted after
+	manager.SalonID = nil
+	result = database.DB.Db.Save(&manager)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Cannot set null to manager",
+		})
+	}
+
+	// Delete all staff related and the salon
+	var user models.User
+	result = database.DB.Db.Where("salon_id = ?", salonId).Unscoped().Delete(&user)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Cannot remove user Staff",
+		})
+	}
+
+	// Delete the salon
+	var salon models.Salon
+	result = database.DB.Db.Where("id = ?", id).Delete(&salon)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Cannot remove Salon",
+		})
+	}
+
+	return c.SendString("Salon successfully deleted")
 }
