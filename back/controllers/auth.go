@@ -29,7 +29,7 @@ func CreateNewUser(c *fiber.Ctx) error {
 		})
 	}
 
-	if true {
+	if user.Roles == "manager" {
 		salon := new(models.Salon)
 		salon.ID, _ = models.GenerateUUID()
 		salonInfo, ok := body["SalonInfo"].(map[string]interface{})
@@ -60,9 +60,7 @@ func CreateNewUser(c *fiber.Ctx) error {
 		user.SalonID = &salon.ID
 
 		users, ok := body["Users"].([]interface{})
-		fmt.Println(users)
 		if !ok {
-			// handle error
 			return fmt.Errorf("Users is not a slice")
 		}
 		for _, user := range users {
@@ -86,7 +84,7 @@ func CreateNewUser(c *fiber.Ctx) error {
 			}
 			employee.Password = helper.GeneratePassword(8)
 			body := helper.CreateMailBody(employee.Firstname, employee.Email, employee.Password, salon.Name)
-			helper.SendConfirmationEmail(body, employee.Email)
+			helper.SendConfirmationEmail(body, employee.Email, "Confirmation de création de compte")
 
 			employee.Roles = "staff"
 			hashedPassword, err := models.HashPassword(employee.Password)

@@ -43,7 +43,7 @@ function Register() {
   const { register, isAuthenticated } = useContext(AuthContext);
 
   useEffect(() => {
-    console.log(role);
+
     if (isAuthenticated) {
       navigate('/');
     }
@@ -93,11 +93,10 @@ function Register() {
     })
     .then(response => response.json())
     .then(data => {
-        // setCookie('authToken', data.jwt, 1);
-        console.log(data);
+        setCookie('authToken', data.jwt, 1);
     });
     closePopup();
-    // navigate('/');
+    navigate('/');
   }
 
   async function handleSubmit(event) {

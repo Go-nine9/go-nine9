@@ -291,8 +291,8 @@ func GetSalonById(c *fiber.Ctx) error {
 	result := database.DB.Db.
 		Preload("Hours").
 		Preload("User").
-		// Preload("User.Slots").
-		// Preload("Service").
+		Preload("User.Slots").
+		Preload("Service").
 		Preload("Service.Prestation").
 		Where("id = ?", id).First(&salon)
 	if result.Error != nil {

@@ -62,7 +62,6 @@ const Reservation = () => {
             setSelectedUser(salonsData.User[0].ID);
             setDategroupe(salonsData.User[0].Slots.map(slot => ({ time: slot.SlotTime, id: slot.ID })));
             if(Cookies.get('authToken')) {
-
                 setIsConnected(true);
             }else{
                 setIsConnected(false);
