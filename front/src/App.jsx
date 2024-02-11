@@ -50,7 +50,7 @@ function App() {
 function StaffRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Dashboard />} />
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/create" element={<CreateSalons />} />
       <Route path="/addStaff" element={<AddStaff />} />
       <Route path="/modify" element={<ModifyMySalon />} />

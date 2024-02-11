@@ -31,7 +31,6 @@ func GetMySalons(c *fiber.Ctx) error {
 	result := database.DB.Db.
 		Preload("User").
 		Preload("User.Slots").
-		Preload("User.Slots.Reservation").
 		Preload("Service.Prestation").
 		Find(&salons, "id = ?", salonId)
 	if result.Error != nil {
