@@ -56,7 +56,9 @@ func setupRoutes(app *fiber.App) {
 	//SERVICE
 	management.Post("/service", controllers.CreateService)
 
+	//
 	// ADMIN ONLY //
+	management.Post("/prestations", controllers.CreatePrestation)
 
 	// SALONS
 	admin := api.Group("/admin", middleware.RoleMiddleware("admin"))
