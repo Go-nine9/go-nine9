@@ -49,35 +49,28 @@ func CreateSlot(c *fiber.Ctx) error {
 			"message": err.Error(),
 		})
 	}
-
-	salonID, err := uuid.Parse(claims["salonID"].(string))
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Failed to parse salonID",
-		})
-	}
-
-	role := claims["role"].(string)
-	if role == "manager" {
-		salon := new(models.Salon)
-		if err := c.BodyParser(salon); err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": err.Error(),
-			})
-		}
-
-		salonID = salon.ID
-	}
-
 	slot := new(models.Slot)
 	if err := c.BodyParser(slot); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
 		})
 	}
-	slot.SalonID = salonID
+
+	role := claims["role"].(string)
+	if role == "manager" {
+		salonIdToken, err := uuid.Parse(claims["salonID"].(string))
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to parse salonID",
+			})
+		}
+		SalonID := salonIdToken
+		slot.SalonID = SalonID
+	}
+
+	slot.ID, _ = uuid.NewUUID()
 	database.DB.Db.Create(&slot)
-	return c.JSON("slot")
+	return c.JSON(slot)
 }
 
 func UpdateSlot(c *fiber.Ctx) error {
@@ -101,11 +94,11 @@ func UpdateSlot(c *fiber.Ctx) error {
 func DeleteSlot(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var slot models.Slot
-	result := database.DB.Db.Where("id = ?", id).Delete(&slot)
+	result := database.DB.Db.Unscoped().Where("id = ?", id).Delete(&slot)
 	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": result.Error.Error(),
 		})
 	}
-	return c.JSON("slot")
+	return c.JSON(slot)
 }

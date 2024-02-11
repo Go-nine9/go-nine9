@@ -11,7 +11,7 @@ func setupRoutes(app *fiber.App) {
 	// PUBLIC ROUTES //
 	app.Get("/", controllers.Home)
 	app.Get("/salons", controllers.GetSalons)
-	app.Post("/salons", controllers.CreateSalon)
+
 	app.Get("/salons/:id", controllers.GetSalonById)
 
 	// AUTH ROUTES //
@@ -23,7 +23,8 @@ func setupRoutes(app *fiber.App) {
 	api.Get("/me", controllers.GetMe)
 	api.Patch("/me", controllers.UpdateMe)
 	api.Patch("/me/password", controllers.UpdateMePassword)
-	api.Post("/salons/:id/slots/:id/reservations", controllers.CreateReservation)
+	api.Post("/reservations", controllers.CreateReservation)
+	api.Post("/salons", controllers.CreateSalon)
 
 	// GESTION ROUTES (ADMIN AND MANAGER) //
 	management := api.Group("/management", middleware.RoleMiddleware("manager", "admin"))
@@ -40,6 +41,8 @@ func setupRoutes(app *fiber.App) {
 	management.Post("/salons/staff", controllers.AddStaff)
 	management.Patch("/salons/:id", controllers.UpdateSalon)
 	management.Delete("/salons/:id", controllers.DeleteSalon)
+	management.Delete("/salons/staff/:staffID", controllers.DeleteStaff)
+	management.Post("/hours", controllers.CreateHours)
 
 	// SLOTS
 	management.Get("/slots", controllers.GetAllSlots)
@@ -51,9 +54,20 @@ func setupRoutes(app *fiber.App) {
 	management.Post("/reservations", controllers.CreateReservation)
 	management.Delete("/reservations/:id", controllers.DeleteReservation)
 
+	//SERVICE
+	management.Post("/service", controllers.CreateService)
+	management.Patch("/service/:id", controllers.UpdateService)
+	management.Delete("/service/:id", controllers.DeleteService)
+
+	//Prestations
+	management.Post("/prestations", controllers.CreatePrestation)
+	management.Patch("/prestations/:id", controllers.UpdatePrestation)
+	management.Delete("/prestations/:id", controllers.DeletePrestation)
+
 	// ADMIN ONLY //
 
 	// SALONS
 	admin := api.Group("/admin", middleware.RoleMiddleware("admin"))
 	admin.Get("/salons", controllers.GetSalons)
+	admin.Post("/salons", controllers.CreateSalonAdmin)
 }

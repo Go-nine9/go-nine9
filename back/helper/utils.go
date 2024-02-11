@@ -3,12 +3,15 @@ package helper
 import (
 	"fmt"
 	"math/rand"
+	"net/smtp"
 	"os"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 var SecretKey = os.Getenv("JWT_SECRET")
@@ -90,27 +93,109 @@ func isOwner(user_role string) bool {
 	return false
 }
 
-// func RoleMiddleware(c *fiber.Ctx) error {
-// 	authHeader := c.Get("Authorization")
-// 	if authHeader == "" {
-// 		return c.Status(fiber.StatusUnauthorized).SendString("Unauthorized")
-// 	}
+var jwtKey = os.Getenv("JWT_SECRET")
 
-// 	tokenString := strings.Split(authHeader, " ")[1]
-// 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-// 		return jwtSecret, nil
-// 	})
+func GenerateToken(id uuid.UUID, role string, firstname string, email string, salonID uuid.UUID) (string, error) {
+	NewClaim := jwt.MapClaims{
+		"id":        id.String(),
+		"exp":       time.Now().Add(time.Hour * 24).Unix(), // 1 jour
+		"role":      role,
+		"firstname": firstname,
+		"email":     email,
+		"salonID":   salonID.String(),
+	}
 
-// 	if err != nil || !token.Valid {
-// 		return c.Status(fiber.StatusUnauthorized).SendString("Unauthorized")
-// 	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, NewClaim)
 
-// 	claims := token.Claims.(jwt.MapClaims)
-// 	userRole := claims["user_role"].(string)
+	signedToken, err := token.SignedString([]byte(jwtKey))
 
-// 	if userRole != "admin" {
-// 		return c.Status(fiber.StatusForbidden).SendString("Forbidden")
-// 	}
+	if err != nil {
+		return "", err
+	}
 
-// 	return c.Next()
-// }
+	return signedToken, nil
+}
+
+func SendConfirmationEmail(msg string, recipent string, MailSubject string) {
+	from := os.Getenv("SMTP_USER")
+	password := os.Getenv("SMTP_PASSWORD")
+
+	to := []string{
+		recipent,
+	}
+
+	smtpHost := os.Getenv("SMTP_HOST")
+	smtpPort := os.Getenv("SMTP_PORT")
+
+	from_msg := fmt.Sprintf("From: %s\r\n", from)
+	to_msg := fmt.Sprintf("To: %s\r\n", recipent)
+	subject := fmt.Sprintf("Subject: %s\r\n", MailSubject)
+	body := msg
+
+	message := []byte(from_msg + to_msg + subject + "\r\n" + body)
+
+	fmt.Println("message" + msg)
+	auth := smtp.PlainAuth("", from, password, smtpHost)
+
+	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, message)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Println("Email Sent Successfully!")
+}
+
+func CreateMailBody(recipientName string, email string,password string, salon string) string {
+	return fmt.Sprintf(`Bonjour %s,
+	votre employeur vous a créé un compte sur notre application de réservation de coiffeur.
+	Voici vos identifiants de connexion:
+	Email: %s
+	Mot de passe: %s
+	Connectez-vous à l'application pour gérer vos réservations et votre emploi du temps.
+	Cordialement,
+	Votre équipe %s`, recipientName, email, password, salon)
+}
+
+
+
+func CreateConfirmationEmailBody(recipientName string, date string, person string, salon string) string {
+	return fmt.Sprintf(`Bonjour %s,
+
+Nous sommes heureux de vous confirmer que votre réservation a été effectuée avec succès.
+
+Détails de la réservation :
+Date : %s
+Avec votre coiffeur : %s
+
+Nous vous remercions de votre réservation et nous avons hâte de vous accueillir.
+
+Cordialement,
+Votre équipe %s`, recipientName, date, person, salon)
+}
+
+func CreateDeleteStaffBody(recipientName string, date string, salon string, tel string) string {
+	return fmt.Sprintf(`Bonjour %s,
+
+Nous sommes désolé de vous indiquer que votre compte a été supprimé le %s
+
+Vous ne pourrez plus recevoir de réservation du salon : %s
+
+Merci de contacter votre ancien manager si soucis il y au :%s
+
+Cordialement,
+Planity`, recipientName, date, salon, tel)
+}
+
+func CreateNewStaffBody(recipientName string, date string, salon string, password string) string {
+	return fmt.Sprintf(`Bonjour %s,
+
+Votre compte a bien été crée le %s
+
+Pour le salon : %s
+
+Utilisez votre mail et ce mot de passe donné par le manager ou l'admin :  %s
+
+Cordialement,
+Planity`, recipientName, date, salon, password)
+}

@@ -12,10 +12,15 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const token = getCookie('authToken');
-    setIsAuthenticated(!!token);
-    setIsManager(!!isManager)
+    if (token){
+      setIsAuthenticated(token === undefined  ? true : false );
+    const role = getRole(token)
+    setIsManager(role === "manager" ? true : false)
     setIsStaff(!!isStaff)
-  }, []);
+
+    }
+    
+  }, [isStaff]);
 
   const login = async (email, password) => {
     try {
@@ -88,6 +93,7 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     setIsAuthenticated(false);
+    setIsManager(false); 
     deleteCookie('authToken');
   };
 
@@ -99,18 +105,18 @@ export function AuthProvider({ children }) {
       logout,
       register,
     }),
-    [isAuthenticated],
+    [isAuthenticated, isManager],
   );
 
   return <AuthContext.Provider value={authContextValue}>{children}</AuthContext.Provider>;
 }
 
-function setCookie(name, value, days) {
+export function setCookie(name, value, days) {
   const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
   document.cookie = `${name}=${value}; expires=${expires}; path=/; secure;`;
 }
 
-function getCookie(name) {
+ export  function getCookie(name) {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) return parts.pop().split(';').shift();
@@ -120,8 +126,15 @@ function deleteCookie(name) {
   document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure;`;
 }
 
-function getRole(jwt){
+export  function getRole(jwt){
   const decodedHeader = jwtDecode(jwt);
   return decodedHeader.role
+
+}
+
+export  function getJWT(jwt){
+  const decodedJWT = jwtDecode(jwt);
+  console.log(jwt)
+  return decodedJWT
 
 }
