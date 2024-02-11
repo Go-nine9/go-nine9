@@ -11,6 +11,7 @@ import AddStaff from './pages/Manager/AddStaff';
 import ModifyMySalon from './pages/Manager/ModifyStaff';
 import Reservation from './pages/reservation/Reservation';
 import Confirmation from './pages/confirmation/Confirmation';
+import Navbar from './components/Navbar/Navbar';
 function App() {
   const { isAuthenticated, isManager } = useContext(AuthContext);
 
@@ -37,6 +38,7 @@ function App() {
       <div>
         <BrowserRouter>
           <AuthProvider>
+          <Navbar/>
             {isManager ? ManagerRoutes : isAuthenticated ? publicRoutes : publicRoutes}
           </AuthProvider>
         </BrowserRouter>
