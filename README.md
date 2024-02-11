@@ -56,7 +56,6 @@ Copy and paste .env.example change the variable
 
 ## ➤ API Reference
 Go here : For see the documentation API
-(Care to bee local environement)
 https://documenter.getpostman.com/view/24794951/2sA2r3YkNF
 ---
 ## 🙇 Authors
