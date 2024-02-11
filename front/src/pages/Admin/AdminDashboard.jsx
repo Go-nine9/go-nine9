@@ -89,7 +89,6 @@ const AdminDashboard = () => {
                 <td>{salon.Phone}</td>
                 <td>{salon.Description}</td>
                 <td>
-                  <Link to={`/admin/modify/${salon.ID}`}>Modifier</Link>
                   <button onClick={() => handleDeleteSalon(salon.ID)}>Supprimer</button>
                 </td>
               </tr>
