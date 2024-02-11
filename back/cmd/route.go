@@ -54,6 +54,16 @@ func setupRoutes(app *fiber.App) {
 	management.Post("/reservations", controllers.CreateReservation)
 	management.Delete("/reservations/:id", controllers.DeleteReservation)
 
+	//SERVICE
+	management.Post("/service", controllers.CreateService)
+	management.Patch("/service/:id", controllers.UpdateService)
+	management.Delete("/service/:id", controllers.DeleteService)
+
+	//Prestations
+	management.Post("/prestations", controllers.CreatePrestation)
+	management.Patch("/prestations/:id", controllers.UpdatePrestation)
+	management.Delete("/prestations/:id", controllers.DeletePrestation)
+
 	// ADMIN ONLY //
 
 	// SALONS
