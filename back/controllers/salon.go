@@ -538,3 +538,34 @@ func DeleteStaff(c *fiber.Ctx) error {
 
 	return c.SendString("Salon successfully deleted")
 }
+
+func CreateHours(c *fiber.Ctx) error {
+	claims, err := helper.GetClaims(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	hours := new(models.Hours)
+	if err := c.BodyParser(hours); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	role := claims["role"].(string)
+	if role == "manager" {
+		salonIdToken, err := uuid.Parse(claims["salonID"].(string))
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to parse salonID",
+			})
+		}
+		hours.SalonID = &salonIdToken
+	}
+
+	hours.ID, _ = uuid.NewUUID()
+	database.DB.Db.Create(&hours)
+	return c.JSON(hours)
+}

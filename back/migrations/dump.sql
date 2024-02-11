@@ -126,15 +126,6 @@ VALUES
     ('ce801349-752c-4cee-a660-9f7cceaf7121','ce801349-752c-4cee-a660-9f7cceaf7132', 'Samedi','2024-01-21 09:00:00', '2024-01-21 17:00:00'),
     ('ce801349-752c-4cee-a660-9f7cceaf7120','ce801349-752c-4cee-a660-9f7cceaf7132', 'Dimanche', NULL, NULL);
 
-INSERT INTO hours ("id","salon_id", "day_of_week", "opening_time", "closing_time")
-VALUES
-    ('ce801349-752c-4cee-a661-9f7cceaf7115','ce801349-752c-4cee-a660-9f7cceaf7139', 'Lundi', '2024-01-21 10:00:00', '2024-01-21 18:00:00'),
-    ('ce801349-752c-4cee-a661-9f7cceaf7114','ce801349-752c-4cee-a660-9f7cceaf7139', 'Mardi', '2024-01-21 10:00:00', '2024-01-21 18:00:00'),
-    ('ce801349-752c-4cee-a661-9f7cceaf7113','ce801349-752c-4cee-a660-9f7cceaf7139', 'Mercredi', '2024-01-21 10:00:00', '2024-01-21 18:00:00'),
-    ('ce801349-752c-4cee-a661-9f7cceaf7112','ce801349-752c-4cee-a660-9f7cceaf7139', 'Jeudi', '2024-01-21 10:00:00', '2024-01-21 20:00:00'),
-    ('ce801349-752c-4cee-a661-9f7cceaf7111','ce801349-752c-4cee-a660-9f7cceaf7139', 'Vendredi', '2024-01-21 10:00:00', '2024-01-21 20:00:00'),
-    ('ce801349-752c-4cee-a661-9f7cceaf7116','ce801349-752c-4cee-a660-9f7cceaf7139', 'Samedi', '2024-01-21 09:00:00', '2024-01-21 17:00:00'),
-    ('ce801349-752c-4cee-a661-9f7cceaf7117','ce801349-752c-4cee-a660-9f7cceaf7139', 'Dimanche', NULL, NULL);
 
 INSERT INTO "services" ("id", "name", "description", "salon_id")
     VALUES ('ce801349-752c-4cee-a660-9f7cceaf7133', 'Coupe - Homme ', 'Chaque prestation comprend un diagnostic où nous prenons le temps d''échanger sur vos envies et attentes, suivi d''un shampoing avec le traditionnel massage crânien, ensuite nous passons à la coupe et procédons pour finir au coiffage.', 'ce801349-752c-4cee-a660-9f7cceaf7132');
