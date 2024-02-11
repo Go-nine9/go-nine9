@@ -1,9 +1,10 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../../AuthContext/AuthContext';
+import { AuthContext, setCookie } from '../../AuthContext/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import './register.css'
+import { XCircle } from 'lucide-react';
 
 function Register() {
   const [firstname, setFirstname] = useState('');
@@ -12,15 +13,92 @@ function Register() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState("users");
   const [error, setError] = useState(null);
-  const [rows, setRows] = useState([{}]);
+  const [rows, setRows] = useState([{ lastname: '', firstname: '', email: '' }]);
+  const [salonInfo, setSalonInfo] = useState({ name: '', address: '', phone: '' ,description:''});
+  
+  const handleInputChange = (index, event) => {
+    const values = [...rows];
+    values[index][event.target.name] = event.target.value;
+    setRows(values);
+  };
+
+  const handleInputChangeSalon = (event) => {
+    setSalonInfo({
+      ...salonInfo,
+      [event.target.name]: event.target.value
+  });
+  };
+
+  const increment = () => {
+    setRows([...rows, { lastname: '', firstname: '', email: '' }]);
+  };
+
+  const decrement = (index) => {
+      const values = [...rows];
+      values.splice(index, 1);
+      setRows(values);
+  };
+
   const navigate = useNavigate();
   const { register, isAuthenticated } = useContext(AuthContext);
 
   useEffect(() => {
+    console.log(role);
     if (isAuthenticated) {
       navigate('/');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, role]);
+
+  const openPopup = (event) => {
+    event.preventDefault();
+    document.querySelector('.container-popup').style.display = 'flex';
+  }
+
+  const closePopup = () => {
+    const popupContainer = document.querySelector('.container-popup');
+    popupContainer.style.display = 'none';
+
+    const inputs = popupContainer.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.value = '';
+    });
+
+    const textareas = popupContainer.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        textarea.value = '';
+    });
+
+    setSalonInfo({});
+    setRows([{}]);
+    setSalonInfo({});
+};
+
+  const registerPro = () => {
+    const body = {
+      firstname:firstname,
+      Lastname:lastname,
+      Email:email,
+      Password:password,
+      Roles:role,
+      SalonInfo:salonInfo,
+      Users: rows
+  };
+
+  fetch('http://localhost:8097/auth/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+    })
+    .then(response => response.json())
+    .then(data => {
+        // setCookie('authToken', data.jwt, 1);
+        console.log(data);
+    });
+    closePopup();
+    // navigate('/');
+  }
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -36,51 +114,83 @@ function Register() {
     }
   }
 
-  const increment = () => {
-    setRows([...rows, {}]);
-  };
-
-  const decrement = (index) => {
-      setRows(rows.filter((_, i) => i !== index));
-  };
-
-  const openPopup = () => {
-    document.querySelector('.container-popup').style.display = 'flex';
-  }
+  
 
   return (
     <div className="container-page">
       <div className="container-popup">
         <div className="card-popup">
-          <h1>Créer un établissement</h1>
-              <div className="salon-info">  
-                <input type="text" name="salonName" placeholder="Nom de l'établissement" />
-                <input type="text" name="salonAddress" placeholder="Adresse" />
-                <input type="text" name="salonPhone" placeholder="Phone" />
-                <textarea id="" cols="30" rows="10" name="descriptionSalon"></textarea>
+          <XCircle className='close' onClick={closePopup}/>
+          <h1>Créer votre établissement</h1>
+              <div className="salon-info"> 
+                <div className="top">
+                <input
+                      type="text"
+                      name="name"
+                      placeholder="Nom de l'établissement"
+                      value={salonInfo.name}
+                      onChange={handleInputChangeSalon}
+                  />
+                  <input
+                      type="text"
+                      name="address"
+                      placeholder="Adresse"
+                      value={salonInfo.address}
+                      onChange={handleInputChangeSalon}
+                  />
+                  <input
+                      type="text"
+                      name="phone"
+                      placeholder="Phone"
+                      value={salonInfo.phone}
+                      onChange={handleInputChangeSalon}
+                  />
+                </div>
+                <textarea 
+                  id="" 
+                  cols="30" 
+                  rows="10" 
+                  name="description"
+                  value={salonInfo.description} 
+                  placeholder="Description"
+                  onChange={handleInputChangeSalon}
+                >
+                </textarea>
               </div>
-
-              {rows.map((_, index) => (
+              <h2>Ajouté des employés</h2>
+              {rows.map((row, index) => (
             <div className="row" key={index}>
-                <label htmlFor={`lastnameHairdressingSalon${index}`}>
-                    Nom
-                    <input id={`lastnameHairdressingSalon${index}`} type="text" placeholder='Nom'/>
-                </label>
-                <label htmlFor={`firstnameHairdressingSalon${index}`}>
-                    Prénom
-                    <input id={`firstnameHairdressingSalon${index}`} type="text" placeholder='Prénom'/>
-                </label>
-                <label htmlFor={`emailHairdressingSalon${index}`}>
-                    Email
-                    <input id={`emailHairdressingSalon${index}`} type="text" placeholder='Email'/>
-                </label>
+                    <input
+                        name="lastname"
+                        id={`lastnameHairdressingSalon${index}`}
+                        type="text"
+                        placeholder='Nom'
+                        value={row.lastname}
+                        onChange={event => handleInputChange(index, event)}
+                    />
+                    <input
+                        name="firstname"
+                        id={`firstnameHairdressingSalon${index}`}
+                        type="text"
+                        placeholder='Prénom'
+                        value={row.firstname}
+                        onChange={event => handleInputChange(index, event)}
+                    />
+                    <input
+                        name="email"
+                        id={`emailHairdressingSalon${index}`}
+                        type="text"
+                        placeholder='Email'
+                        value={row.email}
+                        onChange={event => handleInputChange(index, event)}
+                    />
                 <button onClick={() => increment()}>+</button>
                 {rows.length > 1 && (
                     <button onClick={() => decrement(index)}>-</button>
                 )}
             </div>
         ))}
-              <button>Créer mon établissement</button>
+              <button className="btn-primary" onClick={registerPro}>Créer mon établissement</button>
         </div>
       </div>
       <div className="left">
@@ -137,31 +247,32 @@ function Register() {
             <div className="role-container">
               <h2>Êtes-vous un professionnel</h2>
               <div className="role-content">
-                <label htmlFor="dewey" className='roles'>
+              <label htmlFor="dewey" className='roles'>
                   <input 
-                    type="radio" 
-                    id="user"
-                    name="user"
-                    value="manager"
-                    onChange={(e)=>{setRole(e.target.value)}}
+                      type="radio" 
+                      id="manager"
+                      name="user"
+                      value="manager"
+                      onChange={(e)=>{setRole(e.target.value)}}
+                      checked={role === 'manager'}
                   />
                   Oui
-                </label>
-                <label htmlFor="huey" className='roles'>
+              </label>
+              <label htmlFor="huey" className='roles'>
                   <input 
-                    type="radio"
-                    id="user"
-                    name="user"
-                    value="users"
-                    checked
-                    onChange={(e)=>{setRole(e.target.value)}}
+                      type="radio"
+                      id="users"
+                      name="user"
+                      value="users"
+                      onChange={(e)=>{setRole(e.target.value)}}
+                      checked={role === 'users'}
                   />
                   Non
-                </label>
+              </label>
               </div>
             </div>
             {role === "manager" ? (
-                <button className="btn-primary" onClick={openPopup}>Créer mon compte</button>
+                <button className="btn-primary" onClick={(event) => openPopup(event)}>Créer mon compte</button>
             ):(
                 <button className="btn-primary" onClick={(event) => handleSubmit(event)}>Créer mon compte</button>
               )

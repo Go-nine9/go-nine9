@@ -32,8 +32,7 @@ func GetMySalons(c *fiber.Ctx) error {
 	var salons []models.Salon
 	result := database.DB.Db.
 		Preload("User").
-		// Preload("User.Slots").
-		// Preload("User.Slots.Reservation").
+		Preload("User.Slots").
 		Preload("Service.Prestation").
 		Find(&salons, "id = ?", salonId)
 	if result.Error != nil {

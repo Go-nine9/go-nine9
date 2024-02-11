@@ -146,6 +146,19 @@ func SendConfirmationEmail(msg string, recipent string, MailSubject string) {
 	fmt.Println("Email Sent Successfully!")
 }
 
+func CreateMailBody(recipientName string, email string,password string, salon string) string {
+	return fmt.Sprintf(`Bonjour %s,
+	votre employeur vous a créé un compte sur notre application de réservation de coiffeur.
+	Voici vos identifiants de connexion:
+	Email: %s
+	Mot de passe: %s
+	Connectez-vous à l'application pour gérer vos réservations et votre emploi du temps.
+	Cordialement,
+	Votre équipe %s`, recipientName, email, password, salon)
+}
+
+
+
 func CreateConfirmationEmailBody(recipientName string, date string, person string, salon string) string {
 	return fmt.Sprintf(`Bonjour %s,
 
