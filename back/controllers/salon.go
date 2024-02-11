@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Go-nine9/go-nine9/database"
@@ -32,6 +31,8 @@ func GetMySalons(c *fiber.Ctx) error {
 	result := database.DB.Db.
 		Preload("User").
 		Preload("User.Slots").
+		Preload("User.Slots.Reservation").
+		Preload("Service.Prestation").
 		Find(&salons, "id = ?", salonId)
 	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -47,6 +48,8 @@ func GetSalons(c *fiber.Ctx) error {
 		Preload("User").
 		Preload("User.Salon").
 		Preload("User.Slots").
+		Preload("Hours").
+		Preload("Service").
 		Find(&salons)
 
 	if result.Error != nil {
@@ -182,7 +185,13 @@ func CreateSalon(c *fiber.Ctx) error {
 func GetSalonById(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var salon models.Salon
-	result := database.DB.Db.Preload("User").Preload("User.Slots").Where("id = ?", id).First(&salon)
+	result := database.DB.Db.
+		Preload("Hours").
+		Preload("User").
+		Preload("User.Slots").
+		Preload("Service").
+		Preload("Service.Prestation").
+		Where("id = ?", id).First(&salon)
 	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": result.Error.Error(),
@@ -272,7 +281,6 @@ func UpdateSalon(c *fiber.Ctx) error {
 	result := database.DB.Db.Updates(&salon)
 
 	if result.Error != nil {
-		fmt.Print(result.Error)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to update salon",
 		})

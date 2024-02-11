@@ -2,7 +2,11 @@
     padding: 32px 60px;
    
     .description{
-        color:#4e5860;  
+        color:#4e5860;
+        &.description-salon{
+            margin-bottom: 24px;
+            font-size: 16px;
+        }
     }
     h1, h2, h3, h4{
         font-size: 24px;
@@ -83,6 +87,14 @@
         display: flex;
         gap: 32px;
     }
+    .coordonnes{
+        display: flex;
+        gap: 24px;
+        p{
+            display: flex;
+            align-items: center;    
+        }
+    }
     .salon-info{
         width: 800px;
         display: flex;
@@ -143,16 +155,37 @@
         .service-content{
             border-bottom: 1px solid #cccccc;
             display: flex;
-            justify-content: space-between;
             align-items: center;
             padding: 16px 24px;
             h5{
+                width: 100%;
                 font-size: 18px;
                 font-weight: normal;
+            }
+            .price{
+                width: 10%;
             }
             .btn-primary{
                 margin-top: 0;
             }
         }
+    }
+    .hourly-container{
+        background-color: white;
+        box-shadow: 0 4px 8px -2px rgba(26, 27, 31, 0.08);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-radius: 16px;
+        gap: 16px;
+    }
+    .hourly{
+        width: 100%;
+        padding: 16px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #cccccc;
     }
 }

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"os"
 	"time"
 
 	"github.com/Go-nine9/go-nine9/database"
@@ -9,7 +10,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-const SecretKey = "secret"
+var SecretKey = os.Getenv("JWT_SECRET")
 
 func CreateNewUser(c *fiber.Ctx) error {
 	user := new(models.User)
@@ -34,12 +35,26 @@ func CreateNewUser(c *fiber.Ctx) error {
 			"message": "Could not generate UUID",
 		})
 	}
-	// Attribution automatique du rôle "users"
+
 	if user.Roles == "" {
 		user.Roles = "users"
 	}
-	// Création de l'utilisateur dans la base de données
+
 	database.DB.Db.Create(&user)
+
+	//IF user is a manager, create a salon
+	if user.Roles == "manager" {
+
+		salon := new(models.Salon)
+		salon.ID, err = models.GenerateUUID()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Could not generate UUID",
+			})
+		}
+		salon.Name = user.Firstname + "'s salon"
+		database.DB.Db.Create(&salon)
+	}
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":        user.ID,
 		"exp":       time.Now().Add(time.Hour * 24).Unix(), // 1 jour
@@ -55,8 +70,7 @@ func CreateNewUser(c *fiber.Ctx) error {
 		})
 	}
 	userWithToken := fiber.Map{
-		"user": user,
-		"jwt":  token,
+		"jwt": token,
 	}
 	return c.Status(200).JSON(userWithToken)
 }
@@ -101,7 +115,6 @@ func LoginUser(c *fiber.Ctx) error {
 	}
 	response := fiber.Map{
 		"jwt": token,
-		// "user": existingUser,
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response)

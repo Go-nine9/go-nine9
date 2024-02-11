@@ -12,10 +12,10 @@ function Register() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState("users");
   const [error, setError] = useState(null);
+  const [rows, setRows] = useState([{}]);
   const navigate = useNavigate();
   const { register, isAuthenticated } = useContext(AuthContext);
 
-  // Redirigez l'utilisateur vers une autre page si déjà authentifié
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/');
@@ -36,9 +36,53 @@ function Register() {
     }
   }
 
+  const increment = () => {
+    setRows([...rows, {}]);
+  };
+
+  const decrement = (index) => {
+      setRows(rows.filter((_, i) => i !== index));
+  };
+
+  const openPopup = () => {
+    document.querySelector('.container-popup').style.display = 'flex';
+  }
 
   return (
     <div className="container-page">
+      <div className="container-popup">
+        <div className="card-popup">
+          <h1>Créer un établissement</h1>
+              <div className="salon-info">  
+                <input type="text" name="salonName" placeholder="Nom de l'établissement" />
+                <input type="text" name="salonAddress" placeholder="Adresse" />
+                <input type="text" name="salonPhone" placeholder="Phone" />
+                <textarea id="" cols="30" rows="10" name="descriptionSalon"></textarea>
+              </div>
+
+              {rows.map((_, index) => (
+            <div className="row" key={index}>
+                <label htmlFor={`lastnameHairdressingSalon${index}`}>
+                    Nom
+                    <input id={`lastnameHairdressingSalon${index}`} type="text" placeholder='Nom'/>
+                </label>
+                <label htmlFor={`firstnameHairdressingSalon${index}`}>
+                    Prénom
+                    <input id={`firstnameHairdressingSalon${index}`} type="text" placeholder='Prénom'/>
+                </label>
+                <label htmlFor={`emailHairdressingSalon${index}`}>
+                    Email
+                    <input id={`emailHairdressingSalon${index}`} type="text" placeholder='Email'/>
+                </label>
+                <button onClick={() => increment()}>+</button>
+                {rows.length > 1 && (
+                    <button onClick={() => decrement(index)}>-</button>
+                )}
+            </div>
+        ))}
+              <button>Créer mon établissement</button>
+        </div>
+      </div>
       <div className="left">
         <div className="register-container">
           <h1 className="register-title">Nouveau sur Gonine ?</h1>
@@ -48,7 +92,7 @@ function Register() {
                 Nom *
                 <input
                   type="text"
-                  placeholder="Nom de famille"
+                  placeholder="Nom"
                   name="lastname"
                   className="form-control"
                   value={lastname}
@@ -116,7 +160,12 @@ function Register() {
                 </label>
               </div>
             </div>
-            <button className="btn-primary"onClick={(event) => handleSubmit(event)}>Créer mon compte</button>
+            {role === "manager" ? (
+                <button className="btn-primary" onClick={openPopup}>Créer mon compte</button>
+            ):(
+                <button className="btn-primary" onClick={(event) => handleSubmit(event)}>Créer mon compte</button>
+              )
+            }
             {error && <p className="error">{error}</p>}
           </form>
           <span className="separation">ou</span>

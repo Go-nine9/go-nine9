@@ -3,6 +3,7 @@ package helper
 import (
 	"fmt"
 	"math/rand"
+	"net/smtp"
 	"os"
 	"strings"
 	"time"
@@ -104,14 +105,10 @@ func GenerateToken(id uuid.UUID, role string, firstname string, email string, sa
 		"salonID":   salonID.String(),
 	}
 
-	fmt.Print(NewClaim)
-
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, NewClaim)
 
-	fmt.Print(token)
-
 	signedToken, err := token.SignedString([]byte(jwtKey))
-	fmt.Print(err)
+
 	if err != nil {
 		return "", err
 	}
@@ -119,27 +116,47 @@ func GenerateToken(id uuid.UUID, role string, firstname string, email string, sa
 	return signedToken, nil
 }
 
-// func RoleMiddleware(c *fiber.Ctx) error {
-// 	authHeader := c.Get("Authorization")
-// 	if authHeader == "" {
-// 		return c.Status(fiber.StatusUnauthorized).SendString("Unauthorized")
-// 	}
+func SendConfirmationEmail(msg string, recipent string) {
+	from := os.Getenv("SMTP_USER")
+	password := os.Getenv("SMTP_PASSWORD")
 
-// 	tokenString := strings.Split(authHeader, " ")[1]
-// 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-// 		return jwtSecret, nil
-// 	})
+	to := []string{
+		recipent,
+	}
 
-// 	if err != nil || !token.Valid {
-// 		return c.Status(fiber.StatusUnauthorized).SendString("Unauthorized")
-// 	}
+	smtpHost := os.Getenv("SMTP_HOST")
+	smtpPort := os.Getenv("SMTP_PORT")
 
-// 	claims := token.Claims.(jwt.MapClaims)
-// 	userRole := claims["user_role"].(string)
+	from_msg := fmt.Sprintf("From: %s\r\n", from)
+	to_msg := fmt.Sprintf("To: %s\r\n", recipent)
+	subject := fmt.Sprintf("Subject: %s\r\n", "Confirmation de réservation")
+	body := msg
 
-// 	if userRole != "admin" {
-// 		return c.Status(fiber.StatusForbidden).SendString("Forbidden")
-// 	}
+	message := []byte(from_msg + to_msg + subject + "\r\n" + body)
 
-// 	return c.Next()
-// }
+	fmt.Println("message" + msg)
+	auth := smtp.PlainAuth("", from, password, smtpHost)
+
+	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, message)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Println("Email Sent Successfully!")
+}
+
+func CreateConfirmationEmailBody(recipientName string, date string, person string, salon string) string {
+	return fmt.Sprintf(`Bonjour %s,
+
+Nous sommes heureux de vous confirmer que votre réservation a été effectuée avec succès.
+
+Détails de la réservation :
+Date : %s
+Avec votre coiffeur : %s
+
+Nous vous remercions de votre réservation et nous avons hâte de vous accueillir.
+
+Cordialement,
+Votre équipe %s`, recipientName, date, person, salon)
+}

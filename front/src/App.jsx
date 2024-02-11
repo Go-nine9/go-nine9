@@ -1,5 +1,5 @@
-import React, { useContext, useEffect } from 'react';
-import { Routes, Route, BrowserRouter, useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import { AuthContext, AuthProvider } from './AuthContext/AuthContext';
 import Login from './pages/login/Login';
 import Home from './pages/home/Home';
@@ -9,7 +9,8 @@ import Register from './pages/register/Register';
 import Salon from './pages/salons/Salon';
 import AddStaff from './pages/Manager/AddStaff';
 import ModifyMySalon from './pages/Manager/ModifyStaff';
-
+import Reservation from './pages/reservation/Reservation';
+import Confirmation from './pages/confirmation/Confirmation';
 function App() {
   const { isAuthenticated, isManager } = useContext(AuthContext);
 
@@ -26,6 +27,8 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/" element={<Home />} />
       <Route path="/salons/:id" element={<Salon />} />
+      <Route path="salons/:id/reservation" element={<Reservation />} />
+      <Route path="/confirmation" element={<Confirmation />} />
     </Routes>
   );
 

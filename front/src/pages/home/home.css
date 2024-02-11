@@ -1,6 +1,9 @@
 .homePage{
     display: flex;
     align-items: start;
+    .description{
+        color:#4e5860;
+    }
     .left{
         height: 100%;
         width:100%;
@@ -10,7 +13,7 @@
         .intro{
             padding: 24px;
             width: calc(100% - 48px);
-            background-color:#f7f7f7;
+            background-color:#e6e6e6;
             h1{
                 font-size: 16px;
                 font-weight: 600;

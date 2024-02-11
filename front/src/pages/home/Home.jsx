@@ -31,40 +31,12 @@ const Home = () => {
             <img src="https://res.cloudinary.com/planity/image/upload/x_0,y_216,w_2992,h_1780,c_crop/t_d_search,f_auto/m2mfnjksc00bdynoj9ag" alt="" />
             <div className="salon-info">
               <h2>{salon.Name}</h2>
-              <p>{salon.Description}</p>
+              <p className='description'>{salon.Description.substring(0, 100)}...</p>
               <p><MapPin />{salon.Address}</p>
               <p><PhoneCall />{salon.Phone}</p>
             </div>
             <div className="cta-container">
-              <Link to={`salons/${salon.ID}`} className='btn-primary'>Prendre RDV</Link>
-            </div>
-          </div>
-        ))}
-        {salons.map((salon) => (
-          <div key={salon.ID} className='salons'>
-            <img src="https://res.cloudinary.com/planity/image/upload/x_0,y_216,w_2992,h_1780,c_crop/t_d_search,f_auto/m2mfnjksc00bdynoj9ag" alt="" />
-            <div className="salon-info">
-              <h2>{salon.Name}</h2>
-              <p>{salon.Description}</p>
-              <p><MapPin />{salon.Address}</p>
-              <p><PhoneCall />{salon.Phone}</p>
-            </div>
-            <div className="cta-container">
-              <Link to={`salons/${salon.ID}`} className='btn-primary'>Prendre RDV</Link>
-            </div>
-          </div>
-        ))}
-        {salons.map((salon) => (
-          <div key={salon.ID} className='salons'>
-            <img src="https://res.cloudinary.com/planity/image/upload/x_0,y_216,w_2992,h_1780,c_crop/t_d_search,f_auto/m2mfnjksc00bdynoj9ag" alt="" />
-            <div className="salon-info">
-              <h2>{salon.Name}</h2>
-              <p>{salon.Description}</p>
-              <p><MapPin />{salon.Address}</p>
-              <p><PhoneCall />{salon.Phone}</p>
-            </div>
-            <div className="cta-container">
-              <Link to={`salons/${salon.ID}`} className='btn-primary'>Prendre RDV</Link>
+              <Link to={`/salons/${salon.ID}`} className='btn-primary'>Prendre RDV</Link>
             </div>
           </div>
         ))}

@@ -23,7 +23,7 @@ func setupRoutes(app *fiber.App) {
 	api.Get("/me", controllers.GetMe)
 	api.Patch("/me", controllers.UpdateMe)
 	api.Patch("/me/password", controllers.UpdateMePassword)
-	api.Post("/salons/:id/slots/:id/reservations", controllers.CreateReservation)
+	api.Post("/reservations", controllers.CreateReservation)
 	api.Post("/salons", controllers.CreateSalon)
 
 	// GESTION ROUTES (ADMIN AND MANAGER) //
