@@ -90,7 +90,7 @@ func CreateReservation(c *fiber.Ctx) error {
 
 	fmt.Println("Sending email to", customerId["email"].(string))
 	body := helper.CreateConfirmationEmailBody(customerFirstname, dateStr, hairdressingStaffName, salonName)
-	helper.SendConfirmationEmail(body, customerId["email"].(string))
+	helper.SendConfirmationEmail(body, customerId["email"].(string), "Confirmation de réservation")
 	return c.JSON(reservation)
 }
 

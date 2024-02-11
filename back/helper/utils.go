@@ -116,7 +116,7 @@ func GenerateToken(id uuid.UUID, role string, firstname string, email string, sa
 	return signedToken, nil
 }
 
-func SendConfirmationEmail(msg string, recipent string) {
+func SendConfirmationEmail(msg string, recipent string, MailSubject string) {
 	from := os.Getenv("SMTP_USER")
 	password := os.Getenv("SMTP_PASSWORD")
 
@@ -129,7 +129,7 @@ func SendConfirmationEmail(msg string, recipent string) {
 
 	from_msg := fmt.Sprintf("From: %s\r\n", from)
 	to_msg := fmt.Sprintf("To: %s\r\n", recipent)
-	subject := fmt.Sprintf("Subject: %s\r\n", "Confirmation de réservation")
+	subject := fmt.Sprintf("Subject: %s\r\n", MailSubject)
 	body := msg
 
 	message := []byte(from_msg + to_msg + subject + "\r\n" + body)
@@ -159,4 +159,17 @@ Nous vous remercions de votre réservation et nous avons hâte de vous accueilli
 
 Cordialement,
 Votre équipe %s`, recipientName, date, person, salon)
+}
+
+func CreateDeleteStaffBody(recipientName string, date string, salon string, tel string) string {
+	return fmt.Sprintf(`Bonjour %s,
+
+Nous sommes désolé de vous indiquer que votre compte a été supprimé le %s
+
+Vous ne pourrez plus recevoir de réservation du salon : %s
+
+Merci de contacter votre ancien manager si soucis il y au :%s
+
+Cordialement,
+Planity`, recipientName, date, salon, tel)
 }
