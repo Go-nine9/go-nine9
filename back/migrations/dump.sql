@@ -48,6 +48,8 @@ CREATE TABLE "slots"(
     "slot_time" TIMESTAMP(0) WITHOUT TIME ZONE NULL,
     "hairdressing_staff_id" UUID NULL,
     "salon_id" UUID NOT NULL,
+    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NULL,
+    "updated_at" TIMESTAMP(0) WITHOUT TIME ZONE NULL,
     "deleted_at" TIMESTAMP(0) WITHOUT TIME ZONE NULL
 );
 
@@ -59,17 +61,7 @@ CREATE TABLE "hours"(
     "closing_time" TIMESTAMP(0) WITHOUT TIME ZONE NULL
 );
 
-    
--- CREATE TABLE "images"(
---     "id" UUID NOT NULL,
---     "url" VARCHAR(255) NOT NULL,
--- );
 
--- CREATE TABLE "images_salons"(
---     "id" UUID NOT NULL,
---     "image_id" UUID NOT NULL,
---     "salon_id" UUID NOT NULL,
--- );
 ALTER TABLE
     "reservations" ADD PRIMARY KEY("id");
 ALTER TABLE
@@ -115,14 +107,14 @@ INSERT INTO "users" ("id", "lastname", "firstname", "email", "password", "roles"
     VALUES ('9f7ceeaf-7132-4cee-a660-ce801349-852c', 'Lastname', 'Firstname', 'email@example.com', 'password', 'manager', 'ce801349-752c-4cee-a660-9f7cceaf7132');
 
 INSERT INTO "users" ("id", "lastname", "firstname", "email", "password", "roles", "salon_id")
-    VALUES ('9f7ceeaf-7132-4cee-a660-ce801349-853c', 'admin', 'admin', 'romainlhuillier94@gmail.com', 'admin', 'admin', 'ce801349-752c-4cee-a660-9f7cceaf7139');
+    VALUES ('9f7ceeaf-7132-4cee-a660-ce801349-853c', 'admin', 'admin', 'admin', 'admin', 'admin', 'ce801349-752c-4cee-a660-9f7cceaf7139');
 
-INSERT INTO "slots" ("id", "slot_time", "hairdressing_staff_id", "salon_id", "deleted_at") VALUES
-    ('9f7ceeaf-7132-4cee-a660-ce801349854c',	'2024-02-12 10:00:00',	'9f7ceeaf-7132-4cee-a660-ce801349852c',	'ce801349-752c-4cee-a660-9f7cceaf7132',	NULL),
-    ('9f7ceeaf-7132-4cee-a660-ce801349858c',	'2024-02-12 11:00:00',	'9f7ceeaf-7132-4cee-a660-ce801349852c',	'ce801349-752c-4cee-a660-9f7cceaf7132',	NULL),
-    ('9f7ceeaf-7132-4cee-a660-ce801349857c',	'2024-02-12 12:00:00',	'9f7ceeaf-7132-4cee-a660-ce801349852c',	'ce801349-752c-4cee-a660-9f7cceaf7132',	NULL),
-    ('9f7ceeaf-7132-4cee-a660-ce801349856c',	'2024-02-13 10:00:00',	'9f7ceeaf-7132-4cee-a660-ce801349852c',	'ce801349-752c-4cee-a660-9f7cceaf7132',	NULL),
-    ('9f7ceeaf-7132-4cee-a660-ce801349855c',	'2024-02-13 12:00:00',	'9f7ceeaf-7132-4cee-a660-ce801349852c',	'ce801349-752c-4cee-a660-9f7cceaf7132',	NULL);
+INSERT INTO "slots" ("id", "slot_time", "hairdressing_staff_id", "salon_id","created_at","updated_at","deleted_at") VALUES
+    ('9f7ceeaf-7132-4cee-a660-ce801349854c',	'2024-02-12 10:00:00',	'9f7ceeaf-7132-4cee-a660-ce801349852c',	'ce801349-752c-4cee-a660-9f7cceaf7132',NULL,NULL,NULL),
+    ('9f7ceeaf-7132-4cee-a660-ce801349858c',	'2024-02-12 11:00:00',	'9f7ceeaf-7132-4cee-a660-ce801349852c',	'ce801349-752c-4cee-a660-9f7cceaf7132',NULL,NULL,NULL),
+    ('9f7ceeaf-7132-4cee-a660-ce801349857c',	'2024-02-12 12:00:00',	'9f7ceeaf-7132-4cee-a660-ce801349852c',	'ce801349-752c-4cee-a660-9f7cceaf7132',NULL,NULL,NULL),
+    ('9f7ceeaf-7132-4cee-a660-ce801349856c',	'2024-02-13 10:00:00',	'9f7ceeaf-7132-4cee-a660-ce801349852c',	'ce801349-752c-4cee-a660-9f7cceaf7132',NULL,NULL,NULL),
+    ('9f7ceeaf-7132-4cee-a660-ce801349855c',	'2024-02-13 12:00:00',	'9f7ceeaf-7132-4cee-a660-ce801349852c',	'ce801349-752c-4cee-a660-9f7cceaf7132',NULL,NULL,NULL);
 
 INSERT INTO "hours" ("id","salon_id", "day_of_week", "opening_time", "closing_time")
 VALUES
