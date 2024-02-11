@@ -173,3 +173,16 @@ Merci de contacter votre ancien manager si soucis il y au :%s
 Cordialement,
 Planity`, recipientName, date, salon, tel)
 }
+
+func CreateNewStaffBody(recipientName string, date string, salon string, password string) string {
+	return fmt.Sprintf(`Bonjour %s,
+
+Votre compte a bien été crée le %s
+
+Pour le salon : %s
+
+Utilisez votre mail et ce mot de passe donné par le manager ou l'admin :  %s
+
+Cordialement,
+Planity`, recipientName, date, salon, password)
+}
