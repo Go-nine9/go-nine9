@@ -41,6 +41,7 @@ func setupRoutes(app *fiber.App) {
 	management.Post("/salons/staff", controllers.AddStaff)
 	management.Patch("/salons/:id", controllers.UpdateSalon)
 	management.Delete("/salons/:id", controllers.DeleteSalon)
+	management.Delete("/salons/staff/:staffID", controllers.DeleteStaff)
 
 	// SLOTS
 	management.Get("/slots", controllers.GetAllSlots)

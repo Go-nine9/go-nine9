@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/Go-nine9/go-nine9/database"
 	"github.com/Go-nine9/go-nine9/helper"
@@ -30,8 +32,8 @@ func GetMySalons(c *fiber.Ctx) error {
 	var salons []models.Salon
 	result := database.DB.Db.
 		Preload("User").
-		Preload("User.Slots").
-		Preload("User.Slots.Reservation").
+		// Preload("User.Slots").
+		// Preload("User.Slots.Reservation").
 		Preload("Service.Prestation").
 		Find(&salons, "id = ?", salonId)
 	if result.Error != nil {
@@ -333,6 +335,58 @@ func DeleteSalon(c *fiber.Ctx) error {
 			"message": "Cannot remove Salon",
 		})
 	}
+
+	return c.SendString("Salon successfully deleted")
+}
+
+func DeleteStaff(c *fiber.Ctx) error {
+	staffIdString := c.Params("staffID")
+
+	// Convert the Salon Id string into UUID
+	staffId, err := uuid.Parse(staffIdString)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid salon ID format",
+		})
+	}
+
+	// Delete all reservations relation to this staff
+	var slot models.Slot
+	result := database.DB.Db.Where("hairdressing_staff_id = ?", staffId).Unscoped().Delete(&slot)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Cannot remove user slots",
+		})
+	}
+
+	// Find the staff to retrieve the mail
+	var staff models.User
+	result = database.DB.Db.Preload("Salon").Where("id = ? AND roles = ?", staffId, "staff").First(&staff)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Cannot find manager",
+		})
+	}
+
+	result = database.DB.Db.Where("id = ?", staffId).Unscoped().Delete(&staff)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Cannot remove user Staff",
+		})
+	}
+
+	// Send Email to the staff
+	now := time.Now()
+	year := fmt.Sprintf("%d", now.Year())
+	month := fmt.Sprintf("%02d", now.Month())
+	day := fmt.Sprintf("%02d", now.Day())
+
+	dateStr := year + "-" + month + "-" + day
+
+	fmt.Println("Sending email to", staff.Email)
+	body := helper.CreateDeleteStaffBody(staff.Firstname, dateStr, staff.Salon.Name, staff.Salon.Phone)
+	helper.SendConfirmationEmail(body, staff.Email, "Compte supprimé")
 
 	return c.SendString("Salon successfully deleted")
 }
