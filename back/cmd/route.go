@@ -41,6 +41,7 @@ func setupRoutes(app *fiber.App) {
 	management.Post("/salons/staff", controllers.AddStaff)
 	management.Patch("/salons/:id", controllers.UpdateSalon)
 	management.Delete("/salons/:id", controllers.DeleteSalon)
+	management.Delete("/salons/staff/:staffID", controllers.DeleteStaff)
 
 	// SLOTS
 	management.Get("/slots", controllers.GetAllSlots)
@@ -57,4 +58,5 @@ func setupRoutes(app *fiber.App) {
 	// SALONS
 	admin := api.Group("/admin", middleware.RoleMiddleware("admin"))
 	admin.Get("/salons", controllers.GetSalons)
+	admin.Post("/salons", controllers.CreateSalonAdmin)
 }

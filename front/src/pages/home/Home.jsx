@@ -24,7 +24,7 @@ const Home = () => {
       <div className='left'>
         <div className="intro">
           <h1>Sélectionnez un salon</h1>
-          <p>Les meilleurs salon et instituts aux alentours de vous :  Réservatio en ligne</p>
+          <p>Les meilleurs salon et instituts aux alentours de vous :  Réservation en ligne</p>
         </div>
         {salons.map((salon) => (
           <div key={salon.ID} className='salons'>

@@ -3,7 +3,7 @@ import { getCookie, setCookie } from '../../AuthContext/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 
-const CreateSalons = () => {
+const CreateSalonAdmin = () => {
     const [salon, setSalon] = useState({
         Name: '',
         Address: '',
@@ -28,7 +28,7 @@ const CreateSalons = () => {
         const {Name, Address, Phone, user, Description} = salon;
         const requestData = {Name, Address, Phone, user, Description};
         try {
-            const response = await fetch('http://localhost:8097/api/salons', {
+            const response = await fetch('http://localhost:8097/api/admin/salons', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -46,9 +46,8 @@ const CreateSalons = () => {
                 setErrors(responseData.message || 'Échec de la requête d\'inscription');
             } else {
                 console.log(responseData); 
-                setCookie('authToken', responseData.jwt, 1);
                 setErrors("");
-                navigate("/admin/");
+                navigate("/administrateur/AdminDashboard");
             }
           } catch (err) {
             setErrors(err.message || 'Une erreur inattendue s\'est produite');
@@ -141,4 +140,4 @@ const CreateSalons = () => {
   )
 }
 
-export default CreateSalons
+export default CreateSalonAdmin

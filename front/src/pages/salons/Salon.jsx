@@ -22,7 +22,6 @@ const Salon = () => {
         .then(data => data.json())
         .then(data => {
             setSalon(data)
-            console.log(data)
         })
         
     }
@@ -63,7 +62,7 @@ const Salon = () => {
                                     <div className="service-content" key={index}>
                                         <h5>{prestation.Name}</h5>
                                         <p className="price">{prestation.Price}€</p>
-                                        <Link to={`/salons/${salon.ID}/reservation`} state={{ salonsData: salon,prestationData: prestation }} className='btn-primary' >Choisir</Link>
+                                        <Link to={`/salons/${salon.ID}/reservation`} state={{ salonsData: salon, prestationData: prestation }} className='btn-primary' >Choisir</Link>
                                     </div>
                                 ))}
                                 </div>

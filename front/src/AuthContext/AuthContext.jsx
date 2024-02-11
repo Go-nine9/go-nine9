@@ -20,7 +20,7 @@ export function AuthProvider({ children }) {
 
     }
     
-  }, []);
+  }, [isStaff]);
 
   const login = async (email, password) => {
     try {

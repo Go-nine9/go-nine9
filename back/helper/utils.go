@@ -116,7 +116,7 @@ func GenerateToken(id uuid.UUID, role string, firstname string, email string, sa
 	return signedToken, nil
 }
 
-func SendConfirmationEmail(msg string, recipent string) {
+func SendConfirmationEmail(msg string, recipent string, MailSubject string) {
 	from := os.Getenv("SMTP_USER")
 	password := os.Getenv("SMTP_PASSWORD")
 
@@ -129,7 +129,7 @@ func SendConfirmationEmail(msg string, recipent string) {
 
 	from_msg := fmt.Sprintf("From: %s\r\n", from)
 	to_msg := fmt.Sprintf("To: %s\r\n", recipent)
-	subject := fmt.Sprintf("Subject: %s\r\n", "Confirmation de réservation")
+	subject := fmt.Sprintf("Subject: %s\r\n", MailSubject)
 	body := msg
 
 	message := []byte(from_msg + to_msg + subject + "\r\n" + body)
@@ -146,6 +146,19 @@ func SendConfirmationEmail(msg string, recipent string) {
 	fmt.Println("Email Sent Successfully!")
 }
 
+func CreateMailBody(recipientName string, email string,password string, salon string) string {
+	return fmt.Sprintf(`Bonjour %s,
+	votre employeur vous a créé un compte sur notre application de réservation de coiffeur.
+	Voici vos identifiants de connexion:
+	Email: %s
+	Mot de passe: %s
+	Connectez-vous à l'application pour gérer vos réservations et votre emploi du temps.
+	Cordialement,
+	Votre équipe %s`, recipientName, email, password, salon)
+}
+
+
+
 func CreateConfirmationEmailBody(recipientName string, date string, person string, salon string) string {
 	return fmt.Sprintf(`Bonjour %s,
 
@@ -159,4 +172,30 @@ Nous vous remercions de votre réservation et nous avons hâte de vous accueilli
 
 Cordialement,
 Votre équipe %s`, recipientName, date, person, salon)
+}
+
+func CreateDeleteStaffBody(recipientName string, date string, salon string, tel string) string {
+	return fmt.Sprintf(`Bonjour %s,
+
+Nous sommes désolé de vous indiquer que votre compte a été supprimé le %s
+
+Vous ne pourrez plus recevoir de réservation du salon : %s
+
+Merci de contacter votre ancien manager si soucis il y au :%s
+
+Cordialement,
+Planity`, recipientName, date, salon, tel)
+}
+
+func CreateNewStaffBody(recipientName string, date string, salon string, password string) string {
+	return fmt.Sprintf(`Bonjour %s,
+
+Votre compte a bien été crée le %s
+
+Pour le salon : %s
+
+Utilisez votre mail et ce mot de passe donné par le manager ou l'admin :  %s
+
+Cordialement,
+Planity`, recipientName, date, salon, password)
 }
