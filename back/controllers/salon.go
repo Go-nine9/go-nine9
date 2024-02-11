@@ -415,6 +415,7 @@ func UpdateSalon(c *fiber.Ctx) error {
 }
 
 func DeleteSalon(c *fiber.Ctx) error {
+
 	id := c.Params("id")
 
 	// Convert the Salon Id string into UUID
@@ -442,13 +443,37 @@ func DeleteSalon(c *fiber.Ctx) error {
 		})
 	}
 
-	// Delete all staff related and the salon
-	var user models.User
-	result = database.DB.Db.Where("salon_id = ?", salonId).Unscoped().Delete(&user)
+	// Send Message to deleted staff
+	var users []models.User
+	result = database.DB.Db.Where("salon_id = ? AND roles = ?", salonId, "staff").Find(&users)
 	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Cannot remove user Staff",
+			"message": "Cannot find staff",
 		})
+	}
+	for i := 0; i < len(users); i++ {
+		var user models.User
+		user = users[i]
+		// Send Email to the staff
+		now := time.Now()
+		year := fmt.Sprintf("%d", now.Year())
+		month := fmt.Sprintf("%02d", now.Month())
+		day := fmt.Sprintf("%02d", now.Day())
+
+		dateStr := year + "-" + month + "-" + day
+
+		fmt.Println("Sending email to", user.Email)
+		body := helper.CreateDeleteStaffBody(user.Firstname, dateStr, user.Salon.Name, user.Salon.Phone)
+		helper.SendConfirmationEmail(body, user.Email, "Compte supprimé")
+
+		// Delete all staff related and the salon
+		result = database.DB.Db.Unscoped().Delete(&user)
+		if result.Error != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Cannot remove user Staff",
+			})
+		}
+
 	}
 
 	// Delete the salon

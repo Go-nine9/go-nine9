@@ -77,6 +77,7 @@ const AdminDashboard = () => {
               <th>Nom</th>
               <th>Adresse</th>
               <th>Téléphone</th>
+              <th>Description</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -86,6 +87,7 @@ const AdminDashboard = () => {
                 <td>{salon.Name}</td>
                 <td>{salon.Address}</td>
                 <td>{salon.Phone}</td>
+                <td>{salon.Description}</td>
                 <td>
                   <Link to={`/admin/modify/${salon.ID}`}>Modifier</Link>
                   <button onClick={() => handleDeleteSalon(salon.ID)}>Supprimer</button>
