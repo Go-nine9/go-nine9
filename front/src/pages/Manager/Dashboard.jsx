@@ -102,6 +102,7 @@ const Dashboard = () => {
    {salon ?
    <>
     <h2>{salon.Name}</h2>
+    <p>{salon.Description}</p>
     <p>adresse de mon salon : {salon.Address}</p>
     <p>Téléphone: {salon.Phone}</p>
     <h2>L'équipe</h2>

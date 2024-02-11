@@ -8,6 +8,7 @@ const CreateSalons = () => {
         Name: '',
         Address: '',
         Phone: '',
+        Description: '',
         user : []
     });
     const [errors, setErrors] = useState("")
@@ -24,8 +25,8 @@ const CreateSalons = () => {
       };
 
     const NewSalon = async() =>{
-        const {Name, Address, Phone, user} = salon;
-        const requestData = {Name, Address, Phone, user};
+        const {Name, Address, Phone, user, Description} = salon;
+        const requestData = {Name, Address, Phone, user, Description};
         try {
             const response = await fetch('http://localhost:8097/api/salons', {
               method: 'POST',
@@ -36,19 +37,19 @@ const CreateSalons = () => {
               mode: 'cors',
               body: JSON.stringify(requestData),
             });
-        
-            if (!response.ok) {
-              const errorResponse = await response.json();
-              console.log(errorResponse)
-              setErrors(errorResponse.message || 'Échec de la requête d\'inscription');
-            }
-            const Goodresponse = await response.json();
-            console.log(Goodresponse)
-            setCookie('authToken', Goodresponse.jwt , 1);
-            setErrors("")
-            navigate("/admin/")
             
+        
+            const responseData = await response.json(); // Stocker les données de réponse dans une variable
 
+            if (!response.ok) {
+                console.log(responseData); 
+                setErrors(responseData.message || 'Échec de la requête d\'inscription');
+            } else {
+                console.log(responseData); 
+                setCookie('authToken', responseData.jwt, 1);
+                setErrors("");
+                navigate("/admin/");
+            }
           } catch (err) {
             setErrors(err.message || 'Une erreur inattendue s\'est produite');
           }
@@ -94,6 +95,8 @@ const CreateSalons = () => {
             <input name="Address" type="text" placeholder='Ex: 10 rue de Louvois 75002 Paris' value={salon.Address} onChange={handleInputChange}/>
             <label>Numéro de téléphone</label>
             <input name="Phone" type="tel" placeholder="Ex: 667" value={salon.Phone} onChange={handleInputChange}/>
+            <label>Description</label>
+            <input name="Description" type="textarea" placeholder="Ex: Description..." onChange={handleInputChange}/>
             <button onClick={addStaff}>Ajouter des collaborateurs</button>
             {salon.user.map((staffMember, index) => (
           <div key={index}>

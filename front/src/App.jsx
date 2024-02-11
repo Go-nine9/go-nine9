@@ -8,7 +8,7 @@ import CreateSalons from './pages/Manager/CreateSalons';
 import Register from './pages/register/Register';
 import Salon from './pages/salons/Salon';
 import AddStaff from './pages/Manager/AddStaff';
-import ModifyMySalon from './pages/Manager/ModifyStaff';
+import ModifyMySalon from './pages/Manager/ModifySalon';
 import Reservation from './pages/reservation/Reservation';
 import Confirmation from './pages/confirmation/Confirmation';
 function App() {
@@ -48,6 +48,17 @@ function App() {
 }
 
 function StaffRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/create" element={<CreateSalons />} />
+      <Route path="/addStaff" element={<AddStaff />} />
+      <Route path="/modify" element={<ModifyMySalon />} />
+    </Routes>
+  );
+}
+
+function AdminRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Dashboard />} />

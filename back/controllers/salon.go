@@ -97,13 +97,6 @@ func CreateSalon(c *fiber.Ctx) error {
 	//génère un UUID pour le salon
 	salon.ID, _ = models.GenerateUUID()
 
-	//crée le salon
-	result := database.DB.Db.Create(&salon)
-
-	if result.Error != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": result.Error.Error()})
-	}
-
 	// récupère l'id de la personne qui créé le salon
 	userID := claims["id"].(string)
 
@@ -112,7 +105,7 @@ func CreateSalon(c *fiber.Ctx) error {
 
 	// Find the manager by ID
 	var manager models.User
-	result = database.DB.Db.First(&manager, "id = ?", managerID)
+	result := database.DB.Db.First(&manager, "id = ?", managerID)
 
 	// Check if there is an error and the manager doesn't exist
 	if result.Error != nil && result.RowsAffected == 0 {
@@ -121,9 +114,22 @@ func CreateSalon(c *fiber.Ctx) error {
 		})
 	}
 
+	if manager.SalonID != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Vous avez déja un salon",
+		})
+	}
+
 	role := claims["role"].(string)
 	// Associate the salon to manager or create a new manager if not found
 	manager.SalonID = &salon.ID
+
+	//crée le salon
+	result = database.DB.Db.Create(&salon)
+
+	if result.Error != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": result.Error.Error()})
+	}
 
 	// Vérifie si l'utilisateur est déjà un employé d'un salon
 	if role == "employee" {

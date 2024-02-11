@@ -22,8 +22,8 @@ const ModifyMySalon = () => {
       };
 
     const handleModify = async() =>{
-        const {Name, Address, Phone, user} = ModifiedSalon;
-        const requestData = {Name, Address, Phone, user};
+        const {Name, Address, Phone, user, Description} = ModifiedSalon;
+        const requestData = {Name, Address, Phone, user, Description};
         try {
             const response = await fetch(`http://localhost:8097/api/management/salons/${state.state.ID}`, {
               method: 'PATCH',
@@ -53,32 +53,6 @@ const ModifyMySalon = () => {
 
     }
 
-    // // Change les valeurs d'une personne du staff
-    // const handleStaffInputChange = (index, event) => {
-    //     const { name, value } = event.target;
-    //     const updatedStaff = [...ModifiedSalon.User];
-    //     updatedStaff[index][name] = value;
-    //     setModifiedSalon({ ...ModifiedSalon, user: updatedStaff });
-    //   };
-
-    //   //Ajoute une nouvelle entrée de input
-    //   const addStaff = () => {
-    //     setModifiedSalon({
-    //       ...ModifiedSalon,
-    //       user: [
-    //         ...ModifiedSalon.user,
-    //         { Lastname: '', Firstname: '', Email: '', Password: '' , Roles : "staff"},
-    //       ],
-    //     });
-    //   };
-
-    //   //retire un staff
-    //   const removeStaff = (index) => {
-    //     const updatedStaff = [...ModifiedSalon.user];
-    //     updatedStaff.splice(index, 1);
-    //     setModifiedSalon({ ...ModifiedSalon, user: updatedStaff });
-    //   };
-    
 
       
   return (
@@ -96,42 +70,9 @@ const ModifyMySalon = () => {
             <input name="Address" type="text" placeholder='Ex: 10 rue de Louvois 75002 Paris' value={ModifiedSalon.Address} onChange={handleInputChange}/>
             <label>Numéro de téléphone</label>
             <input name="Phone" type="tel" placeholder="Ex: 667" value={ModifiedSalon.Phone} onChange={handleInputChange}/>
-            {/* <button onClick={addStaff}>Ajouter des collaborateurs</button> */}
-            {/* {ModifiedSalon.User.map((staffMember, index) => (
-          <div key={index}>
-          
-          <h3>Staff {index+1}</h3>
-            <label>Nom</label>
-            <input
-              name="Lastname"
-              type="text"
-              value={staffMember.Lastname}
-              onChange={(e) => handleStaffInputChange(index, e)}
-            />
-            <label>Prénom</label>
-            <input
-              name="Firstname"
-              type="text"
-              value={staffMember.Firstname}
-              onChange={(e) => handleStaffInputChange(index, e)}
-            />
-            <label>Email</label>
-            <input
-              name="Email"
-              type="email"
-              value={staffMember.Email}
-              onChange={(e) => handleStaffInputChange(index, e)}
-            />
-            <label>Mot de passe</label>
-            <input
-              name="Password"
-              type="password"
-              value={staffMember.Password}
-              onChange={(e) => handleStaffInputChange(index, e)}
-            />
-              <button onClick={() => removeStaff(index)}>Supprimer</button>
-          </div>
-        ))} */}
+            <label>Description</label>
+            <input name="Description" type="textarea" placeholder="Ex: Description..." value={ModifiedSalon.Description} onChange={handleInputChange}/>
+  
             
           
             </>
