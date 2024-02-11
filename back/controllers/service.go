@@ -51,3 +51,72 @@ func CreateService(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusCreated).JSON(response)
 }
+
+func UpdateService(c *fiber.Ctx) error {
+	var serviceRequest ServiceRequest
+	if err := c.BodyParser(&serviceRequest); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	serviceID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Invalid service ID",
+		})
+	}
+
+	var existingService models.Service
+	result := database.DB.Db.First(&existingService, "id = ?", serviceID)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Service not found",
+		})
+	}
+
+	existingService.Name = serviceRequest.Name
+	existingService.Description = serviceRequest.Description
+
+	result = database.DB.Db.Save(&existingService)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": result.Error.Error(),
+		})
+	}
+
+	response := fiber.Map{
+		"message":         "Service mis à jour avec succès",
+		"updated_service": existingService,
+	}
+	return c.Status(fiber.StatusOK).JSON(response)
+}
+
+func DeleteService(c *fiber.Ctx) error {
+	serviceID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Invalid service ID",
+		})
+	}
+
+	var service models.Service
+	result := database.DB.Db.First(&service, "id = ?", serviceID)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Service not found",
+		})
+	}
+
+	result = database.DB.Db.Delete(&service)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": result.Error.Error(),
+		})
+	}
+
+	response := fiber.Map{
+		"message": "Service supprimé avec succès",
+	}
+	return c.Status(fiber.StatusOK).JSON(response)
+}

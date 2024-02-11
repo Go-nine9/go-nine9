@@ -55,10 +55,15 @@ func setupRoutes(app *fiber.App) {
 
 	//SERVICE
 	management.Post("/service", controllers.CreateService)
+	management.Patch("/service/:id", controllers.UpdateService)
+	management.Delete("/service/:id", controllers.DeleteService)
 
-	//
-	// ADMIN ONLY //
+	//Prestations
 	management.Post("/prestations", controllers.CreatePrestation)
+	management.Patch("/prestations/:id", controllers.UpdatePrestation)
+	management.Delete("/prestations/:id", controllers.DeletePrestation)
+
+	// ADMIN ONLY //
 
 	// SALONS
 	admin := api.Group("/admin", middleware.RoleMiddleware("admin"))
