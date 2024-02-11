@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/Go-nine9/go-nine9/database"
 	"github.com/Go-nine9/go-nine9/helper"
@@ -60,10 +62,11 @@ func GetSalons(c *fiber.Ctx) error {
 }
 
 type SalonRequest struct {
-	User    []models.User `json:"user"`
-	Phone   string        `json:"phone"`
-	Name    string        `json:"name"`
-	Address string        `json:"address"`
+	User        []models.User `json:"user"`
+	Phone       string        `json:"phone"`
+	Name        string        `json:"name"`
+	Address     string        `json:"address"`
+	Description string        `json:"description"`
 }
 
 func CreateSalon(c *fiber.Ctx) error {
@@ -84,20 +87,14 @@ func CreateSalon(c *fiber.Ctx) error {
 	}
 
 	salon := models.Salon{
-		Name:    salonRequest.Name,
-		Address: salonRequest.Address,
-		Phone:   salonRequest.Phone,
+		Name:        salonRequest.Name,
+		Address:     salonRequest.Address,
+		Phone:       salonRequest.Phone,
+		Description: salonRequest.Description,
 	}
 
 	//génère un UUID pour le salon
 	salon.ID, _ = models.GenerateUUID()
-
-	//crée le salon
-	result := database.DB.Db.Create(&salon)
-
-	if result.Error != nil {
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": result.Error.Error()})
-	}
 
 	// récupère l'id de la personne qui créé le salon
 	userID := claims["id"].(string)
@@ -107,7 +104,7 @@ func CreateSalon(c *fiber.Ctx) error {
 
 	// Find the manager by ID
 	var manager models.User
-	result = database.DB.Db.First(&manager, "id = ?", managerID)
+	result := database.DB.Db.First(&manager, "id = ?", managerID)
 
 	// Check if there is an error and the manager doesn't exist
 	if result.Error != nil && result.RowsAffected == 0 {
@@ -116,9 +113,22 @@ func CreateSalon(c *fiber.Ctx) error {
 		})
 	}
 
+	if manager.SalonID != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Vous avez déja un salon",
+		})
+	}
+
 	role := claims["role"].(string)
 	// Associate the salon to manager or create a new manager if not found
 	manager.SalonID = &salon.ID
+
+	//crée le salon
+	result = database.DB.Db.Create(&salon)
+
+	if result.Error != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": result.Error.Error()})
+	}
 
 	// Vérifie si l'utilisateur est déjà un employé d'un salon
 	if role == "employee" {
@@ -152,6 +162,7 @@ func CreateSalon(c *fiber.Ctx) error {
 	for i := 0; i < len(users); i++ {
 		var user models.User
 		user = users[i]
+		passwordToSendEMail := users[i].Password
 		// Assign the salonId to staff
 		user.SalonID = &salon.ID
 		user.Roles = "staff"
@@ -171,10 +182,103 @@ func CreateSalon(c *fiber.Ctx) error {
 			})
 		}
 
+		// Send Email to the staff
+		now := time.Now()
+		year := fmt.Sprintf("%d", now.Year())
+		month := fmt.Sprintf("%02d", now.Month())
+		day := fmt.Sprintf("%02d", now.Day())
+
+		dateStr := year + "-" + month + "-" + day
+
+		fmt.Println("Sending email to", user.Email)
+		body := helper.CreateNewStaffBody(user.Firstname, dateStr, salon.Name, passwordToSendEMail)
+		helper.SendConfirmationEmail(body, user.Email, "Nouveau compte Planity")
+
 	}
 
 	response := fiber.Map{
 		"jwt": signedToken,
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response)
+
+}
+
+func CreateSalonAdmin(c *fiber.Ctx) error {
+
+	// Parse la requete
+	var salonRequest SalonRequest
+	if err := c.BodyParser(&salonRequest); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	salon := models.Salon{
+		Name:        salonRequest.Name,
+		Address:     salonRequest.Address,
+		Phone:       salonRequest.Phone,
+		Description: salonRequest.Description,
+	}
+
+	//génère un UUID pour le salon
+	salon.ID, _ = models.GenerateUUID()
+
+	//crée le salon
+	result := database.DB.Db.Create(&salon)
+
+	// Create staff users
+	users := salonRequest.User
+	for i := 0; i < len(users); i++ {
+		var user models.User
+		user = users[i]
+		passwordToSendEMail := users[i].Password
+		// Assign the salonId to staff
+		user.SalonID = &salon.ID
+
+		user.ID, _ = models.GenerateUUID()
+
+		hashedPassword, err := models.HashPassword(user.Password)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Failed to hash password",
+			})
+		}
+		user.Password = hashedPassword
+
+		if i == 0 {
+			user.Roles = "manager"
+
+		} else {
+			user.Roles = "staff"
+		}
+
+		if err := database.DB.Db.Create(&user).Error; err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"erreur de création": err.Error(),
+			})
+		}
+
+		// Send Email to the staff
+		now := time.Now()
+		year := fmt.Sprintf("%d", now.Year())
+		month := fmt.Sprintf("%02d", now.Month())
+		day := fmt.Sprintf("%02d", now.Day())
+
+		dateStr := year + "-" + month + "-" + day
+
+		fmt.Println("Sending email to", user.Email)
+		body := helper.CreateNewStaffBody(user.Firstname, dateStr, salon.Name, passwordToSendEMail)
+		helper.SendConfirmationEmail(body, user.Email, "Nouveau compte Planity")
+
+	}
+
+	if result.Error != nil {
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": result.Error.Error()})
+	}
+
+	response := fiber.Map{
+		"message": "Salon crée",
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response)
@@ -187,8 +291,8 @@ func GetSalonById(c *fiber.Ctx) error {
 	result := database.DB.Db.
 		Preload("Hours").
 		Preload("User").
-		Preload("User.Slots").
-		Preload("Service").
+		// Preload("User.Slots").
+		// Preload("Service").
 		Preload("Service.Prestation").
 		Where("id = ?", id).First(&salon)
 	if result.Error != nil {
@@ -223,6 +327,15 @@ func AddStaff(c *fiber.Ctx) error {
 		})
 	}
 
+	var salon models.Salon
+	result := database.DB.Db.Where("id = ?", salonID).First(&salon)
+
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Couldn't find salon",
+		})
+	}
+
 	var users []models.User
 	if err := c.BodyParser(&users); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -234,6 +347,7 @@ func AddStaff(c *fiber.Ctx) error {
 	for i := 0; i < len(users); i++ {
 		var user models.User
 		user = users[i]
+		passwordToSendEMail := users[i].Password
 		// Assign the salonId to staff
 		user.SalonID = &salonID
 		user.Roles = "staff"
@@ -248,6 +362,18 @@ func AddStaff(c *fiber.Ctx) error {
 		user.Password = hashedPassword
 
 		database.DB.Db.Create(&user)
+
+		// Send Email to the staff
+		now := time.Now()
+		year := fmt.Sprintf("%d", now.Year())
+		month := fmt.Sprintf("%02d", now.Month())
+		day := fmt.Sprintf("%02d", now.Day())
+
+		dateStr := year + "-" + month + "-" + day
+
+		fmt.Println("Sending email to", user.Email)
+		body := helper.CreateNewStaffBody(user.Firstname, dateStr, salon.Name, passwordToSendEMail)
+		helper.SendConfirmationEmail(body, user.Email, "Nouveau compte Planity")
 
 	}
 
@@ -332,6 +458,58 @@ func DeleteSalon(c *fiber.Ctx) error {
 			"message": "Cannot remove Salon",
 		})
 	}
+
+	return c.SendString("Salon successfully deleted")
+}
+
+func DeleteStaff(c *fiber.Ctx) error {
+	staffIdString := c.Params("staffID")
+
+	// Convert the Salon Id string into UUID
+	staffId, err := uuid.Parse(staffIdString)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid salon ID format",
+		})
+	}
+
+	// Delete all reservations relation to this staff
+	var slot models.Slot
+	result := database.DB.Db.Where("hairdressing_staff_id = ?", staffId).Unscoped().Delete(&slot)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Cannot remove user slots",
+		})
+	}
+
+	// Find the staff to retrieve the mail
+	var staff models.User
+	result = database.DB.Db.Preload("Salon").Where("id = ? AND roles = ?", staffId, "staff").First(&staff)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Cannot find manager",
+		})
+	}
+
+	result = database.DB.Db.Where("id = ?", staffId).Unscoped().Delete(&staff)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Cannot remove user Staff",
+		})
+	}
+
+	// Send Email to the staff
+	now := time.Now()
+	year := fmt.Sprintf("%d", now.Year())
+	month := fmt.Sprintf("%02d", now.Month())
+	day := fmt.Sprintf("%02d", now.Day())
+
+	dateStr := year + "-" + month + "-" + day
+
+	fmt.Println("Sending email to", staff.Email)
+	body := helper.CreateDeleteStaffBody(staff.Firstname, dateStr, staff.Salon.Name, staff.Salon.Phone)
+	helper.SendConfirmationEmail(body, staff.Email, "Compte supprimé")
 
 	return c.SendString("Salon successfully deleted")
 }

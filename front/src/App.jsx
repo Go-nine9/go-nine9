@@ -8,9 +8,11 @@ import CreateSalons from './pages/Manager/CreateSalons';
 import Register from './pages/register/Register';
 import Salon from './pages/salons/Salon';
 import AddStaff from './pages/Manager/AddStaff';
-import ModifyMySalon from './pages/Manager/ModifyStaff';
+import ModifyMySalon from './pages/Manager/ModifySalon';
 import Reservation from './pages/reservation/Reservation';
 import Confirmation from './pages/confirmation/Confirmation';
+import AdminDashboard from './pages/Admin/AdminDashboard';
+import CreateSalonAdmin from './pages/Admin/AdminCreateSalon';
 function App() {
   const { isAuthenticated, isManager } = useContext(AuthContext);
 
@@ -29,6 +31,10 @@ function App() {
       <Route path="/salons/:id" element={<Salon />} />
       <Route path="salons/:id/reservation" element={<Reservation />} />
       <Route path="/confirmation" element={<Confirmation />} />
+      <Route path="/administrateur" element={<Confirmation />} />
+      <Route path="/administrateur/AdminDashboard" element={<AdminDashboard />} />
+      <Route path="/administrateur/createSalon" element={<CreateSalonAdmin />} />
+      <Route path="/administrateur/ModifySalon" element={<Confirmation />} />
     </Routes>
   );
 
@@ -51,6 +57,17 @@ function StaffRoutes() {
   return (
     <Routes>
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/create" element={<CreateSalons />} />
+      <Route path="/addStaff" element={<AddStaff />} />
+      <Route path="/modify" element={<ModifyMySalon />} />
+    </Routes>
+  );
+}
+
+function AdminRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<Dashboard />} />
       <Route path="/create" element={<CreateSalons />} />
       <Route path="/addStaff" element={<AddStaff />} />
       <Route path="/modify" element={<ModifyMySalon />} />

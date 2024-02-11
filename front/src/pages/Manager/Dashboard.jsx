@@ -56,6 +56,30 @@ const Dashboard = () => {
     }
   }
 
+
+  const handleDeleteStaff = async (userID) =>{
+    try {
+      const response = await fetch(`http://localhost:8097/api/management/salons/staff/${userID}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${MyToken}`
+        },
+        mode: 'cors',
+      });
+  
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.message || 'Échec de la requête d\'inscription');
+      }else{
+        getSalon(MyToken)
+      }
+  
+    } catch (err) {
+      throw new Error(err.message || 'Une erreur inattendue s\'est produite');
+    }
+  }
+
   useEffect(() => {
     const cookie = getCookie('authToken');
     const token = getJWT(cookie)
@@ -78,11 +102,14 @@ const Dashboard = () => {
    {salon ?
    <>
     <h2>{salon.Name}</h2>
+    <p>{salon.Description}</p>
     <p>adresse de mon salon : {salon.Address}</p>
     <p>Téléphone: {salon.Phone}</p>
     <h2>L'équipe</h2>
     {salon.User.map((user)=>(
       <>
+      {user.Roles === "staff" &&   <button onClick={()=>{handleDeleteStaff(user.ID)}}>Supprimer</button>}
+    
       <h2>{user.Firstname}  {user.Lastname} {user.Roles === "manager" && "(moi)"}</h2>
       <p>{user.Email} </p>
       <p>{user.Roles} </p>
