@@ -11,6 +11,7 @@ import AddStaff from './pages/Manager/AddStaff';
 import ModifyMySalon from './pages/Manager/ModifySalon';
 import Reservation from './pages/reservation/Reservation';
 import Confirmation from './pages/confirmation/Confirmation';
+import Navbar from './components/Navbar/Navbar';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import CreateSalonAdmin from './pages/Admin/AdminCreateSalon';
 function App() {
@@ -43,6 +44,7 @@ function App() {
       <div>
         <BrowserRouter>
           <AuthProvider>
+          <Navbar/>
             {isManager ? ManagerRoutes : isAuthenticated ? publicRoutes : publicRoutes}
           </AuthProvider>
         </BrowserRouter>
