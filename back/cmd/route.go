@@ -53,6 +53,9 @@ func setupRoutes(app *fiber.App) {
 	management.Post("/reservations", controllers.CreateReservation)
 	management.Delete("/reservations/:id", controllers.DeleteReservation)
 
+	//SERVICE
+	management.Post("/service", controllers.CreateService)
+
 	// ADMIN ONLY //
 
 	// SALONS
