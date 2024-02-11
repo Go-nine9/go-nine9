@@ -63,10 +63,11 @@ func GetSalons(c *fiber.Ctx) error {
 }
 
 type SalonRequest struct {
-	User    []models.User `json:"user"`
-	Phone   string        `json:"phone"`
-	Name    string        `json:"name"`
-	Address string        `json:"address"`
+	User        []models.User `json:"user"`
+	Phone       string        `json:"phone"`
+	Name        string        `json:"name"`
+	Address     string        `json:"address"`
+	Description string        `json:"description"`
 }
 
 func CreateSalon(c *fiber.Ctx) error {
@@ -87,9 +88,10 @@ func CreateSalon(c *fiber.Ctx) error {
 	}
 
 	salon := models.Salon{
-		Name:    salonRequest.Name,
-		Address: salonRequest.Address,
-		Phone:   salonRequest.Phone,
+		Name:        salonRequest.Name,
+		Address:     salonRequest.Address,
+		Phone:       salonRequest.Phone,
+		Description: salonRequest.Description,
 	}
 
 	//génère un UUID pour le salon
@@ -190,8 +192,8 @@ func GetSalonById(c *fiber.Ctx) error {
 	result := database.DB.Db.
 		Preload("Hours").
 		Preload("User").
-		Preload("User.Slots").
-		Preload("Service").
+		// Preload("User.Slots").
+		// Preload("Service").
 		Preload("Service.Prestation").
 		Where("id = ?", id).First(&salon)
 	if result.Error != nil {
